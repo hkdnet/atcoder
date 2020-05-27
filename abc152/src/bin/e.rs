@@ -7,10 +7,12 @@ fn p_d(primes: &Vec<i128>, n: i128) -> (HashSet<i128>, HashMap<i128, u32>) {
     let mut ret = HashMap::new();
     let mut tmp = n;
     for &p in primes.iter() {
+        let mut cnt = 0;
         while tmp % p == 0 {
             tmp /= p;
-            ret.entry(p).and_modify(|e| *e += 1).or_insert(1);
+            cnt += 1;
         }
+        ret.insert(p, cnt);
         if tmp == 1 {
             return (HashSet::new(), ret);
         }
@@ -20,25 +22,18 @@ fn p_d(primes: &Vec<i128>, n: i128) -> (HashSet<i128>, HashMap<i128, u32>) {
     while tmp != 1 {
         if tmp % pt == 0 {
             np.insert(pt);
-            tmp /= pt;
-            ret.entry(pt).and_modify(|e| *e += 1).or_insert(1);
+            let mut cnt = 0;
+            while tmp % pt == 0 {
+                tmp /= pt;
+                cnt += 1;
+            }
+            ret.insert(pt, cnt);
         } else {
             pt += 2;
         }
     }
 
     return (np, ret);
-}
-
-mod test {
-    use super::*;
-
-    #[test]
-    fn name() {
-        let (ps, pp) = p_d(&vec![2], 2);
-        assert_eq!(ps, HashSet::new());
-        assert_eq!(pp.get(&2), Some(&1));
-    }
 }
 
 fn modinv(aa: i128, m: i128) -> i128 {
@@ -80,17 +75,14 @@ fn main() {
         }
     }
     let mut lcm = 1;
-    println!("lcmp = {:?}", lcmp);
     for (p, cnt) in lcmp {
         lcm *= p.pow(cnt);
         lcm %= MOD;
     }
-
     let mut ans = 0;
     for &a in aa.iter() {
         let mi = modinv(a, MOD);
         let tmp = lcm * mi;
-        println!("tmp {} = lcm {} * mi {}", tmp, lcm, mi);
         ans += tmp;
         ans %= MOD;
     }
