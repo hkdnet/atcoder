@@ -1,10 +1,10 @@
 use proconio::input;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 const MOD: i128 = 1000000007;
 
-fn p_d(primes: &Vec<i128>, n: i128) -> (HashSet<i128>, HashMap<i128, u32>) {
-    let mut ret = HashMap::new();
+fn p_d(primes: &Vec<i128>, n: i128) -> (Vec<i128>, Vec<(i128, u32)>) {
+    let mut ret = vec![];
     let mut tmp = n;
     for &p in primes.iter() {
         let mut cnt = 0;
@@ -12,22 +12,22 @@ fn p_d(primes: &Vec<i128>, n: i128) -> (HashSet<i128>, HashMap<i128, u32>) {
             tmp /= p;
             cnt += 1;
         }
-        ret.insert(p, cnt);
+        ret.push((p, cnt));
         if tmp == 1 {
-            return (HashSet::new(), ret);
+            return (vec![], ret);
         }
     }
     let mut pt = 3;
-    let mut np = HashSet::new();
-    while tmp != 1 {
+    let mut np = vec![];
+    while tmp != 1 && pt * pt <= n {
         if tmp % pt == 0 {
-            np.insert(pt);
             let mut cnt = 0;
             while tmp % pt == 0 {
                 tmp /= pt;
                 cnt += 1;
             }
-            ret.insert(pt, cnt);
+            np.push(pt);
+            ret.push((pt, cnt));
         } else {
             pt += 2;
         }
