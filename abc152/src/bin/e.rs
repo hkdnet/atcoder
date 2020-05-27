@@ -33,6 +33,11 @@ fn p_d(primes: &Vec<i128>, n: i128) -> (Vec<i128>, Vec<(i128, u32)>) {
         }
     }
 
+    if tmp != 1 {
+        np.push(tmp);
+        ret.push((tmp, 1));
+    }
+
     return (np, ret);
 }
 
