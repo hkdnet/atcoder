@@ -1,4 +1,8 @@
+use num_bigint::BigInt;
+use num_traits::{One, Zero};
 use proconio::input;
+
+use num_bigint::ToBigInt;
 
 const MOD: i128 = 1000000007;
 
@@ -24,14 +28,18 @@ fn modinv(aa: i128, m: i128) -> i128 {
 
 fn main() {
     input!(n: usize, aa: [i128; n]);
-    let mut lcm = 1;
+    let mut lcm: BigInt = One::one();
     for &a in aa.iter() {
-        lcm = num_integer::lcm(lcm, a);
+        lcm = num_integer::lcm(lcm, a.to_bigint().unwrap());
     }
-    let mut ans = 0;
+    lcm %= MOD;
+
+    let m: i128 = format!("{}", lcm).parse().unwrap();
+
+    let mut ans: BigInt = Zero::zero();
     for &a in aa.iter() {
         let mi = modinv(a, MOD);
-        let tmp = lcm * mi;
+        let tmp = m * mi;
         ans += tmp;
         ans %= MOD;
     }
