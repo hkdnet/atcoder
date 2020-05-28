@@ -3,22 +3,10 @@ use std::collections::HashMap;
 
 const MOD: i128 = 1000000007;
 
-fn p_d(primes: &Vec<i128>, n: i128) -> (Vec<i128>, Vec<(i128, u32)>) {
+fn p_d(n: i128) -> Vec<(i128, u32)> {
     let mut ret = vec![];
     let mut tmp = n;
-    for &p in primes.iter() {
-        let mut cnt = 0;
-        while tmp % p == 0 {
-            tmp /= p;
-            cnt += 1;
-        }
-        ret.push((p, cnt));
-        if tmp == 1 {
-            return (vec![], ret);
-        }
-    }
-    let mut pt = 3;
-    let mut np = vec![];
+    let mut pt = 2;
     while tmp != 1 && pt * pt <= n {
         if tmp % pt == 0 {
             let mut cnt = 0;
@@ -26,19 +14,17 @@ fn p_d(primes: &Vec<i128>, n: i128) -> (Vec<i128>, Vec<(i128, u32)>) {
                 tmp /= pt;
                 cnt += 1;
             }
-            np.push(pt);
             ret.push((pt, cnt));
         } else {
-            pt += 2;
+            pt += 1;
         }
     }
 
     if tmp != 1 {
-        np.push(tmp);
         ret.push((tmp, 1));
     }
 
-    return (np, ret);
+    return ret;
 }
 
 fn modinv(aa: i128, m: i128) -> i128 {
@@ -64,10 +50,8 @@ fn modinv(aa: i128, m: i128) -> i128 {
 fn main() {
     input!(n: usize, aa: [i128; n]);
     let mut lcmp = HashMap::new();
-    let mut primes = vec![2, 3];
     for &a in aa.iter() {
-        let (more, pp) = p_d(&primes, a);
-        primes.append(&mut more.into_iter().collect());
+        let pp = p_d(a);
 
         for (p, cnt) in pp {
             lcmp.entry(p)
