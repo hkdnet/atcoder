@@ -5,6 +5,7 @@ require 'optparse'
 
 class Runner
   def call(argv)
+    failed = false
     @name, *cmds = parser.parse!(argv)
     cmd = cmds.join(' ')
 
@@ -12,7 +13,19 @@ class Runner
       i = in_path(problem_name)
       o = out_path(problem_name)
       c = "cat #{i} | #{cmd} | diff - #{o}"
-      puts "Failed: #{c}" unless system(c, { out: '/dev/null', err: '/dev/null' })
+      unless system(c, { out: '/dev/null', err: '/dev/null' })
+        failed = true
+        puts "Failed: #{c}"
+        if fail_fast?
+          break
+        end
+      end
+    end
+
+    if failed
+      exit 1
+    else
+      exit 0
     end
   end
 
