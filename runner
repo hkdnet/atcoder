@@ -12,7 +12,7 @@ class Runner
     problems.each do |problem_name|
       i = in_path(problem_name)
       o = out_path(problem_name)
-      c = "cat #{i} | #{cmd} | diff - #{o}"
+      c = "cat #{i} | timeout #{timeout} #{cmd} | diff - #{o}"
       unless system(c, { out: '/dev/null', err: '/dev/null' })
         failed = true
         puts "Failed: #{c}"
@@ -30,6 +30,10 @@ class Runner
   end
 
   private
+
+  def timeout
+    @timeout ||= '2s'
+  end
 
   def base_dir
     @base_dir ||= Dir.pwd
@@ -57,8 +61,12 @@ class Runner
 
   def parser
     @parser ||= OptionParser.new do |parser|
-      parser.on('--fail-fast') { @fail_fast = true }
-      parser.on('-d DIR', '--dir DIR') { |e| @base_dir = e }
+      parser.banner = "runner [OPTIONS] PROBLEM -- COMMAND"
+      parser.on('--fail-fast', 'if specified, exit immediately after a failure happens') { @fail_fast = true }
+      parser.on('-d DIR', '--dir DIR', 'dir of testcases. For example, $DIR/$PROBLEM/in/sample1.txt. Default: $PWD') do |e|
+        @base_dir = e
+      end
+      parser.on('-t TIMEOUT', '--timeout TIMEOUT', 'timeout value, default: 2s') { |e| @timeout = e }
     end
   end
 
