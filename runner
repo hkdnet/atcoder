@@ -1,0 +1,57 @@
+#! /usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'optparse'
+
+class Runner
+  def call(argv)
+    @name, *cmds = parser.parse!(argv)
+    cmd = cmds.join(' ')
+
+    problems.each do |problem_name|
+      i = in_path(problem_name)
+      o = out_path(problem_name)
+      c = "cat #{i} | #{cmd} | diff - #{o}"
+      puts "Failed: #{c}" unless system(c, { out: '/dev/null', err: '/dev/null' })
+    end
+  end
+
+  private
+
+  def base_dir
+    @base_dir ||= Dir.pwd
+  end
+
+  def problems
+    @problems ||= Dir["#{in_dir}/*"].map { |e| File.basename(e) }
+  end
+
+  def in_path(name)
+    "#{in_dir}/#{name}"
+  end
+
+  def in_dir
+    File.expand_path("#{@name}/in", base_dir)
+  end
+
+  def out_path(name)
+    "#{out_dir}/#{name}"
+  end
+
+  def out_dir
+    File.expand_path("#{@name}/out/", base_dir)
+  end
+
+  def parser
+    @parser ||= OptionParser.new do |parser|
+      parser.on('--fail-fast') { @fail_fast = true }
+      parser.on('-d DIR', '--dir DIR') { |e| @base_dir = e }
+    end
+  end
+
+  def fail_fast?
+    @fail_fast
+  end
+end
+
+Runner.new.call(ARGV)
