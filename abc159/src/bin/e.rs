@@ -52,6 +52,9 @@ impl S {
             }
             let div = tmp - 1;
             // println!("divide at {}, {}-{}", div, last_div, div);
+            if div == 0 {
+                return None;
+            }
             if div < self.w {
                 ans += 1;
             }
