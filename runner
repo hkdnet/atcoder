@@ -12,8 +12,10 @@ class Runner
     problems.each do |problem_name|
       i = in_path(problem_name)
       o = out_path(problem_name)
-      c = "cat #{i} | timeout #{timeout} #{cmd} | diff - #{o}"
-      unless system(c, { out: '/dev/null', err: '/dev/null' })
+      prefix = time? ? "time" : "timeout #{timeout}"
+      c = "cat #{i} | #{prefix} #{cmd} | diff - #{o}"
+      err = time? ? STDERR : '/dev/null'
+      unless system(c, { out: '/dev/null', err: err })
         failed = true
         puts "Failed: #{c}"
         if fail_fast?
@@ -33,6 +35,10 @@ class Runner
 
   def timeout
     @timeout ||= '2s'
+  end
+
+  def time?
+    defined?(@time) ? @time : false
   end
 
   def base_dir
@@ -67,6 +73,7 @@ class Runner
         @base_dir = e
       end
       parser.on('-t TIMEOUT', '--timeout TIMEOUT', 'timeout value, default: 2s') { |e| @timeout = e }
+      parser.on('--time', 'use time instead of timeout') { @time = true }
     end
   end
 
