@@ -10,6 +10,8 @@ proconio = "*"
 num-bigint = "0.2.6"
 num-traits = "0.2.11"
 num-integer = "0.1.42"
+itertools = "0.9"
+
 [profile.release]
 lto = true
 panic = 'abort'
