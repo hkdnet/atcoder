@@ -1,7 +1,7 @@
 fn main() {
     use proconio::input;
 
-    input!(s: String, t: String);
+    input!(s: String, _: String);
     input!(a: usize, b: usize);
     input!(u: String);
 
