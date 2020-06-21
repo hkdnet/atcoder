@@ -1,5 +1,22 @@
 n = gets.chomp.to_i
 
+def ss(n)
+  arr = []
+
+  while n != 0 do
+    tmp = n % 26
+    if tmp == 0
+      arr << 'z'
+      n -= 26
+    else
+      arr << ('a'.ord + tmp - 1).chr
+    end
+    n /= 26
+  end
+
+  arr.reverse().join()
+end
+
 def s(n)
   s = n.to_s(26)
   cs = s.chars.map do |c|
@@ -13,8 +30,9 @@ def s(n)
 end
 
 # puts s(n)
-1.upto(100) do |n|
-  puts s(n)
-end
+puts ss(n)
+# 1.upto(100) do |n|
+#   puts ss(n)
+# end
 
 
