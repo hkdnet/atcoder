@@ -6,3 +6,6 @@ E
 F
 
 target
+
+# test case
+*.txt
