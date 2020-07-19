@@ -2,31 +2,31 @@ use proconio::input;
 use std::collections::BTreeSet;
 fn solve(n: usize, cs: Vec<(usize, u64, u64)>) -> u64 {
     // k, l, r
-    let mut ls: BTreeSet<(usize, u64, u64)> = BTreeSet::new();
-    let mut rs: BTreeSet<(usize, u64, u64)> = BTreeSet::new();
+    let mut ls: BTreeSet<(usize, u64, u64, usize)> = BTreeSet::new();
+    let mut rs: BTreeSet<(usize, u64, u64, usize)> = BTreeSet::new();
 
-    for (k, l, r) in cs {
+    for (i, &(k, l, r)) in cs.iter().enumerate() {
         if l > r {
-            ls.insert((k, l, r));
+            ls.insert((k, l, r, i));
         } else {
             // 右にいなきゃいけないやつから詰めるので逆順にする
-            rs.insert((n - k, l, r));
+            rs.insert((n - k, l, r, i));
         }
     }
 
-    //    println!("{:?}\n{:?}", ls, rs);
+    // println!("{:?}\n{:?}", ls, rs);
 
     let mut ans = 0;
     {
         // (l-r, idx)
         let mut lc: BTreeSet<(u64, usize)> = BTreeSet::new();
-        for (i, (k, l, r)) in ls.iter().enumerate() {
+        for (i, &(k, l, r, _)) in ls.iter().enumerate() {
             let idx = lc.len() + 1;
             let val = l - r;
             lc.insert((val, i));
             ans += l;
             // 条件を満たさないとき
-            if *k < idx {
+            if k < idx {
                 // pop the lowest diff
                 let v: Vec<&(u64, usize)> = lc.iter().take(1).collect();
                 let (diff, _) = v[0];
@@ -41,12 +41,12 @@ fn solve(n: usize, cs: Vec<(usize, u64, u64)>) -> u64 {
         // (r-l, idx)
         let mut rc: BTreeSet<(u64, usize)> = BTreeSet::new();
 
-        for (i, (k, l, r)) in rs.iter().enumerate() {
+        for (i, &(k, l, r, _)) in rs.iter().enumerate() {
             let idx = rc.len() + 1;
             let val = r - l;
             rc.insert((val, i));
             ans += r;
-            if *k < idx {
+            if k < idx {
                 // pop the lowest diff
                 let v: Vec<&(u64, usize)> = rc.iter().take(1).collect();
                 let (diff, _) = v[0];
@@ -95,6 +95,9 @@ mod tests {
         let n = 2;
         let cs = vec![(1, 2, 3), (2, 10, 20)];
         assert_eq!(solve(n, cs), 13);
+        let n = 3;
+        let cs = vec![(3, 3, 0), (3, 3, 0), (3, 1, 8)];
+        assert_eq!(solve(n, cs), 7);
     }
 }
 
