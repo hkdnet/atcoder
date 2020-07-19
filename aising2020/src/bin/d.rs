@@ -51,10 +51,16 @@ mod tests {
 
     #[test]
     fn test_exec() {
-        let memo = BTreeMap::new();
+        let mut memo = BTreeMap::new();
         assert_eq!(exec(0, &memo), 0);
         assert_eq!(exec(1, &memo), 1);
+        assert_eq!(exec(5, &memo), 2); // 110
+        assert_eq!(exec(6, &memo), 1); // 110
         assert_eq!(exec(7, &memo), 2);
+
+        memo.insert(2, 0);
+
+        assert_eq!(exec(2, &memo), 0);
     }
 }
 
@@ -76,14 +82,24 @@ fn main() {
         }
         return;
     } else if xi == 1 {
-        let def = if cs.last().unwrap() == &'1' { 0 } else { 1 };
-
-        for &c in cs.iter() {
-            if c == '1' {
-                println!("{}", 0);
-            } else {
-                // 常に % 2 される
-                println!("{}", def + 1);
+        let tail_one = cs.last().unwrap() == &'1';
+        if tail_one {
+            for _ in 0..n - 1 {
+                println!("{}", 2);
+            }
+            println!("{}", 0);
+            return;
+        } else {
+            for (idx, &c) in cs.iter().enumerate() {
+                if c == '1' {
+                    println!("{}", 0);
+                } else {
+                    if idx == n - 1 {
+                        println!("{}", 2);
+                    } else {
+                        println!("{}", 1);
+                    }
+                }
             }
         }
 
