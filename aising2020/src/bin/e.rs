@@ -1,16 +1,18 @@
 use proconio::input;
-use std::collections::BTreeSet;
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
+
 fn solve(n: usize, cs: Vec<(usize, u64, u64)>) -> u64 {
     // k, l, r
-    let mut ls: BTreeSet<(usize, u64, u64, usize)> = BTreeSet::new();
-    let mut rs: BTreeSet<(usize, u64, u64, usize)> = BTreeSet::new();
+    let mut ls = BinaryHeap::new();
+    let mut rs = BinaryHeap::new();
 
     for (i, &(k, l, r)) in cs.iter().enumerate() {
         if l > r {
-            ls.insert((k, l, r, i));
+            ls.push(Reverse((k, l, r, i)));
         } else {
             // 右にいなきゃいけないやつから詰めるので逆順にする
-            rs.insert((n - k, l, r, i));
+            rs.push(Reverse((n - k, l, r, i)));
         }
     }
 
@@ -18,41 +20,31 @@ fn solve(n: usize, cs: Vec<(usize, u64, u64)>) -> u64 {
 
     let mut ans = 0;
     {
-        // (l-r, idx)
-        let mut lc: BTreeSet<(u64, usize)> = BTreeSet::new();
-        for (i, &(k, l, r, _)) in ls.iter().enumerate() {
+        let mut lc = BinaryHeap::new();
+        while let Some(Reverse((k, l, r, _))) = ls.pop() {
             let idx = lc.len() + 1;
             let val = l - r;
-            lc.insert((val, i));
+            lc.push(Reverse(val));
             ans += l;
             // 条件を満たさないとき
             if k < idx {
                 // pop the lowest diff
-                let v: Vec<&(u64, usize)> = lc.iter().take(1).collect();
-                let (diff, _) = v[0];
+                let Reverse(diff) = lc.pop().unwrap();
                 ans -= diff;
-                let cloned = v[0].clone();
-                lc.remove(&cloned);
             }
         }
     }
 
     {
-        // (r-l, idx)
-        let mut rc: BTreeSet<(u64, usize)> = BTreeSet::new();
-
-        for (i, &(k, l, r, _)) in rs.iter().enumerate() {
+        let mut rc = BinaryHeap::new();
+        while let Some(Reverse((k, l, r, _))) = rs.pop() {
             let idx = rc.len() + 1;
             let val = r - l;
-            rc.insert((val, i));
+            rc.push(Reverse(val));
             ans += r;
             if k < idx {
-                // pop the lowest diff
-                let v: Vec<&(u64, usize)> = rc.iter().take(1).collect();
-                let (diff, _) = v[0];
+                let Reverse(diff) = rc.pop().unwrap();
                 ans -= diff;
-                let cloned = v[0].clone();
-                rc.remove(&cloned);
             }
         }
     }
@@ -98,6 +90,18 @@ mod tests {
         let n = 3;
         let cs = vec![(3, 3, 0), (3, 3, 0), (3, 1, 8)];
         assert_eq!(solve(n, cs), 7);
+
+        let mut h = BinaryHeap::new();
+        h.push(Reverse((1, 8, 8)));
+        h.push(Reverse((0, 0, 3)));
+        h.push(Reverse((0, 4, 8)));
+        assert_eq!(h.pop(), Some(Reverse((0, 0, 3))));
+        assert_eq!(h.pop(), Some(Reverse((0, 4, 8))));
+        assert_eq!(h.pop(), Some(Reverse((1, 8, 8))));
+
+        let n = 3;
+        let cs = vec![(2, 8, 8), (3, 0, 3), (3, 4, 8)];
+        assert_eq!(solve(n, cs), 12);
     }
 }
 
