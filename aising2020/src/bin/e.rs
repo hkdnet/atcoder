@@ -21,11 +21,10 @@ fn solve(n: usize, cs: Vec<(usize, u64, u64)>) -> u64 {
         // (l-r, idx)
         let mut lc: BTreeSet<(u64, usize)> = BTreeSet::new();
         for (i, (k, l, r)) in ls.iter().enumerate() {
+            let idx = lc.len() + 1;
             let val = l - r;
             lc.insert((val, i));
             ans += l;
-            // 左から i 番目においてある。i は 0-indexなので足して揃える
-            let idx = i + 1;
             // 条件を満たさないとき
             if *k < idx {
                 // pop the lowest diff
@@ -43,11 +42,10 @@ fn solve(n: usize, cs: Vec<(usize, u64, u64)>) -> u64 {
         let mut rc: BTreeSet<(u64, usize)> = BTreeSet::new();
 
         for (i, (k, l, r)) in rs.iter().enumerate() {
+            let idx = rc.len() + 1;
             let val = r - l;
             rc.insert((val, i));
             ans += r;
-            let idx = i + 1;
-            // 条件を満たさないとき
             if *k < idx {
                 // pop the lowest diff
                 let v: Vec<&(u64, usize)> = rc.iter().take(1).collect();
