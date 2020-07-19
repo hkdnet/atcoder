@@ -75,6 +75,28 @@ mod tests {
         let n = 3;
         let cs = vec![(2, 93, 78), (1, 71, 59), (3, 57, 96)];
         assert_eq!(solve(n, cs), 221);
+
+        let n = 1;
+        let cs = vec![(1, 2, 3)];
+        assert_eq!(solve(n, cs), 2);
+        let n = 1;
+        let cs = vec![(1, 3, 2)];
+        assert_eq!(solve(n, cs), 3);
+        let n = 2;
+        let cs = vec![(1, 3, 2), (1, 10, 20)];
+        assert_eq!(solve(n, cs), 23);
+        let n = 2;
+        let cs = vec![(1, 3, 2), (2, 10, 20)];
+        assert_eq!(solve(n, cs), 13);
+        let n = 2;
+        let cs = vec![(1, 2, 3), (1, 10, 20)];
+        assert_eq!(solve(n, cs), 22);
+    }
+    #[test]
+    fn test_solve2() {
+        let n = 2;
+        let cs = vec![(1, 2, 3), (2, 10, 20)];
+        assert_eq!(solve(n, cs), 13);
     }
 }
 
