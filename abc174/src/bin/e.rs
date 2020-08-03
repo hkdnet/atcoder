@@ -24,44 +24,36 @@ where
 
 fn main() {
     use proconio::input;
-    use std::collections::BinaryHeap;
 
     input!(n: usize, k: u64);
     input!(aa: [u64; n]);
 
-    let mut h: BinaryHeap<u64> = BinaryHeap::new();
+    let mut bb = Vec::with_capacity(n);
+    let mut max = aa[0];
     for a in aa {
-        // 0.5単位でしか見ないので2倍しておく
-        h.push(a * 2);
+        let a = a * 2;
+        bb.push(a);
+        if a > max {
+            max = a;
+        }
     }
-
-    let max = *h.peek().unwrap();
 
     let tt = binary_search(max, 0, |t| {
         // println!("t = {} ---", t);
-        let mut h = h.clone();
-        for _ in 0..k {
-            match h.pop() {
-                Some(e) => {
-                    if e <= t {
-                        return true;
-                    }
-                    h.push(e - t);
-
-                    // println!("{:?}", h);
-                }
-                None => {
-                    return true;
-                }
+        let mut cnt = 0;
+        for &b in bb.iter() {
+            if b % t == 0 {
+                cnt += b / t - 1;
+            } else {
+                cnt += b / t;
             }
+            if cnt > k {
+                return false;
+            }
+            // println!("cnt = {}", cnt);
         }
-        match h.peek() {
-            Some(&e) => e <= t,
-            None => true,
-        }
+        true
     });
-
-    // println!("tt = {}", tt);
 
     if tt % 2 == 0 {
         println!("{}", tt / 2);
