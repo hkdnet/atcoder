@@ -3,9 +3,9 @@ fn main() {
     use std::collections::BTreeMap;
 
     input!(n: usize);
-    input!(aa: [u32; n]);
+    input!(aa: [u64; n]);
 
-    let mut dp: Vec<BTreeMap<u32, u32>> = Vec::new();
+    let mut dp: Vec<BTreeMap<u64, u64>> = Vec::new();
     {
         let mut zero = BTreeMap::new();
         zero.insert(1000, 0);
@@ -23,28 +23,21 @@ fn main() {
                 .and_modify(|e| *e = std::cmp::max(*e, s))
                 .or_insert(s);
             {
+                let delta = m / a;
                 // 買う
-                let mut m = m;
-                let mut s = s;
-                while m >= a {
-                    m -= a;
-                    s += 1;
-                    n.entry(m)
-                        .and_modify(|e| *e = std::cmp::max(*e, s))
-                        .or_insert(s);
-                }
+                let m = m - (delta * a);
+                let s = s + delta;
+                n.entry(m)
+                    .and_modify(|e| *e = std::cmp::max(*e, s))
+                    .or_insert(s);
             }
             {
                 // 売る
-                let mut m = m;
-                let mut s = s;
-                while s > 0 {
-                    m += a;
-                    s -= 1;
-                    n.entry(m)
-                        .and_modify(|e| *e = std::cmp::max(*e, s))
-                        .or_insert(s);
-                }
+                let m = m + (s * a);
+                let s = 0;
+                n.entry(m)
+                    .and_modify(|e| *e = std::cmp::max(*e, s))
+                    .or_insert(s);
             }
         }
         dp.push(n);
