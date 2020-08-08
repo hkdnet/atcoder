@@ -24,45 +24,15 @@ def build_loops(n, ps)
   ret
 end
 
-def cross_range(arr, l, r, m)
-  ls_max = nil
-  l_max = m
-  sum = 0
-  m.downto(l) do |i|
-    sum += arr[i]
-    if ls_max.nil? || sum > ls_max
-      ls_max = sum
-      l_max = i
-    end
-  end
-
-  rs_max = nil
-  r_max = m + 1
-  sum = 0
-  (m+1).upto(r) do |i|
-    sum += arr[i]
-    if rs_max.nil? || sum > rs_max
-      rs_max = sum
-      r_max = i
-    end
-  end
-
-  [l_max, r_max, ls_max + rs_max]
-end
-
 def max_range(arr, l = 0, r = arr.size - 1)
-  return [l, r, arr[l]] if l == r
-  mid = (l+r)/2
-  l_l, l_r, l_sum = max_range(arr, l, mid)
-  r_l, r_r, r_sum = max_range(arr, mid + 1, r)
-  c_l, c_r, c_sum = cross_range(arr, l, r, mid)
-
-  ma = [l_sum, r_sum, c_sum].max
-  case ma
-  when l_sum then [l_l, l_r, l_sum]
-  when r_sum then [r_l, r_r, r_sum]
-  when c_sum then [c_l, c_r, c_sum]
+  max = tmp = arr[l]
+  (l+1).upto(r) do |idx|
+    e = arr[idx]
+    tmp = [e, tmp + e].max
+    max = [max, tmp].max
   end
+
+  max
 end
 
 def best_point(k, l, cs)
@@ -79,14 +49,13 @@ def best_point(k, l, cs)
     end
   end
 
-  # require 'pry'; binding.pry
   # loop
   arr += arr
   left = 0
   max = nil
   while left < lsize
     right = left + k - 1
-    _ , _, s = max_range(arr, left, right)
+    s = max_range(arr, left, right)
     if max.nil? || s > max
       max = s
     end
