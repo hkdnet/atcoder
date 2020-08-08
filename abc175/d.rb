@@ -25,6 +25,8 @@ def build_loops(n, ps)
 end
 
 def max_range(arr, l = 0, r = arr.size - 1)
+  return 0 if r < l
+
   max = tmp = arr[l]
   (l+1).upto(r) do |idx|
     e = arr[idx]
