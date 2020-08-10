@@ -34,35 +34,27 @@ fn solve(k: usize, l: Vec<i64>) -> i64 {
     // println!("{:?}", l);
     let len = l.len();
     let li64 = len as i64;
-    let sum = l.iter().fold(0i64, |a, b| a + b);
     let mut max = None;
+
+    let mut acc = vec![0; len + 1];
+    for idx in 0..len {
+        acc[idx + 1] = acc[idx] + l[idx];
+    }
+    let sum = acc[len];
+
     for a in 0..len {
         for b in 0..len {
             // println!("from {} to {}", a, b);
-            let dist = if a < b {
-                b - a
+            let (mut ans, dist) = if a < b {
+                (acc[b + 1] - acc[a + 1], b - a)
             } else if a == b {
-                len
+                (sum, len)
             } else {
-                len + b - a
+                (acc[len] - acc[a + 1] + acc[b + 1], len + b - a)
             };
             if dist > k {
                 continue;
             }
-            let mut ans = if a == b {
-                sum
-            } else {
-                let mut t = 0;
-                let mut tmp = a;
-                while tmp != b {
-                    tmp += 1;
-                    if tmp >= len {
-                        tmp = 0;
-                    }
-                    t += l[tmp];
-                }
-                t
-            };
 
             if sum > 0 {
                 let rest = (k - dist) as i64;
