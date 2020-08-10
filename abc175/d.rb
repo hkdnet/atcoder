@@ -42,8 +42,10 @@ def best_point(k, l, cs)
   lsize = l.size
   arr = l.map { |e| n = cs[e]; sum += n; n }
   point = 0
+  full = 0
   if sum > 0
-    point += sum * (k / lsize)
+    full = k/lsize
+    point += sum * full
     k = k % lsize
   else
     if k >= lsize
@@ -62,6 +64,10 @@ def best_point(k, l, cs)
       max = s
     end
     left += 1
+  end
+
+  if max > sum
+
   end
 
   point + max
