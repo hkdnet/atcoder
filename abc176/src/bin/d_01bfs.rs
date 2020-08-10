@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 fn main() {
     use proconio::input;
     use proconio::marker::Isize1;
@@ -11,25 +13,26 @@ fn main() {
     let in_maze_p = |x: isize, y: isize| -> bool { 0 <= x && x < hi && 0 <= y && y < wi };
     let wall_p = |x: isize, y: isize| -> bool { cells[x as usize][y as usize] == '#' };
 
-    let mut d = vec![-1; w * h];
-    let mut q = std::collections::BinaryHeap::new();
-    q.push((0, sx, sy));
+    let mut used = vec![false; h * w];
+    let mut q: VecDeque<(isize, isize, u32)> = VecDeque::new();
 
-    while let Some((cnt, x, y)) = q.pop() {
-        let cnt = -cnt;
+    q.push_back((sx, sy, 0));
+    while let Some((x, y, cnt)) = q.pop_front() {
+        if used[index_of(x, y)] {
+            continue;
+        }
         if x == gx && y == gy {
             println!("{}", cnt);
             return;
         }
-        if d[index_of(x, y)] != -1 {
-            continue;
-        }
-        d[index_of(x, y)] = cnt;
+        used[index_of(x, y)] = true;
 
         for (xx, yy) in vec![(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
             if in_maze_p(xx, yy) {
                 if !wall_p(xx, yy) {
-                    q.push((-cnt, xx, yy));
+                    if !used[index_of(xx, yy)] {
+                        q.push_front((xx, yy, cnt));
+                    }
                 }
             }
         }
@@ -40,7 +43,7 @@ fn main() {
                 let yy = y + yd;
                 if in_maze_p(xx, yy) {
                     if !wall_p(xx, yy) {
-                        q.push((-cnt - 1, xx, yy));
+                        q.push_back((xx, yy, cnt + 1));
                     }
                 }
             }
