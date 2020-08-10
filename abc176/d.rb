@@ -14,49 +14,58 @@ end
 
 q = []
 used = Hash.new {|h, k| h[k] = {} }
-jump = []
-jump << start
-jump_count = -1
-while !jump.empty?
-  jx, jy = jump.pop
-  next if used[jx][jy]
+jumps = []
+jumps[0] = []
+jumps[0] << [start[0], start[1]]
 
-  # puts "jump to (#{jx}, #{jy})"
+loop do
+  jumps.each_with_index do |jump, jump_count|
+    while !jump.empty?
+      jx, jy = jump.pop
+      next if used[jx][jy]
 
-  jump_count += 1
-  q << [jx, jy]
-  used[jx][jy] = true
+      # puts "jump to (#{jx}, #{jy})"
 
-  while !q.empty?
-    # h, w
-    x, y = q.pop
-    # puts "step to (#{x}, #{y})"
-    if x == gx && y == gy
-      puts jump_count
-      exit 0
-    end
-    [
-      [x-1, y],
-      [x+1, y],
-      [x, y-1],
-      [x, y+1],
-    ].each do |xx, yy|
-      if m[xx][yy] == '.'
-        if !used[xx][yy]
-          q << [xx, yy]
-          used[xx][yy] = true
+      q << [jx, jy]
+      used[jx][jy] = true
+
+      while !q.empty?
+        # h, w
+        x, y = q.pop
+        # puts "step to (#{x}, #{y})"
+        if x == gx && y == gy
+          puts jump_count
+          exit 0
         end
-      end
-    end
+        [
+          [x-1, y],
+          [x+1, y],
+          [x, y-1],
+          [x, y+1],
+        ].each do |xx, yy|
+          if m[xx][yy] == '.'
+            if !used[xx][yy]
+              q << [xx, yy]
+              used[xx][yy] = true
+            end
+          end
+        end
 
-    (x-2).upto(x+2) do |xx|
-      (y-2).upto(y+2) do |yy|
-        if m[xx][yy] == '.'
-          jump << [xx, yy]
+        (x-2).upto(x+2) do |xx|
+          (y-2).upto(y+2) do |yy|
+            if m[xx][yy] == '.'
+              jumps[jump_count+1] ||= []
+              jumps[jump_count+1] <<  [xx, yy]
+            end
+          end
         end
       end
     end
   end
+
+  if jumps.all?(&:empty?)
+    puts -1
+    exit 0
+  end
 end
 
-puts -1
