@@ -1,43 +1,7 @@
 use std::collections::BTreeMap;
 
+use comp::union_find::UnionFind;
 use std::collections::BTreeSet;
-
-struct UnionFind {
-    v: Vec<usize>,
-}
-impl UnionFind {
-    fn new(n: usize) -> Self {
-        UnionFind {
-            v: (0..n).collect(),
-        }
-    }
-    fn root(self: &mut Self, a: usize) -> usize {
-        let mut tmp = a;
-        let mut visited = vec![];
-        while self.v[tmp] != tmp {
-            visited.push(tmp);
-            tmp = self.v[tmp];
-        }
-
-        for i in visited {
-            self.v[i] = tmp;
-        }
-
-        tmp
-    }
-    fn union(self: &mut Self, a: usize, b: usize) {
-        let ra = self.root(a);
-        let rb = self.root(b);
-        if ra != rb {
-            self.v[b] = a;
-        }
-    }
-    fn flatten(self: &mut Self) {
-        for i in 0..self.v.len() {
-            self.root(i);
-        }
-    }
-}
 
 fn main() {
     use proconio::input;
@@ -57,10 +21,9 @@ fn main() {
     let mut uf = UnionFind::new(n);
     for (&a, bs) in friends.iter() {
         for &b in bs.iter() {
-            uf.union(a, b);
+            uf.unite(a, b);
         }
     }
-    uf.flatten();
 
     let cnt = {
         let mut c = BTreeMap::new();
@@ -69,18 +32,18 @@ fn main() {
         }
         c
     };
-    // println!("f {:?}", friends);
-    // println!("b {:?}", blockers);
-    // println!("{:?}", uf.v);
+    println!("f {:?}", friends);
+    println!("b {:?}", blockers);
+    println!("{:?}", uf.v);
     let ans = (0..n)
         .map(|i| {
             let r = uf.root(i);
             let mut ans = *cnt.get(&r).unwrap() - 1;
             let direct_friends = friends.get(&i).map_or(0, |s| s.len());
-            // println!(
-            //     "for {}: r = {}, ans = {}, direct_friends = {}",
-            //     i, r, ans, direct_friends
-            // );
+            println!(
+                "for {}: r = {}, ans = {}, direct_friends = {}",
+                i, r, ans, direct_friends
+            );
             ans -= direct_friends;
 
             if let Some(bs) = blockers.get(&i) {
@@ -90,6 +53,7 @@ fn main() {
                     }
                 }
             }
+
             ans.to_string()
         })
         .collect::<Vec<String>>()

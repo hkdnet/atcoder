@@ -4,6 +4,7 @@
 name = "abc157"
 version = "0.1.0"
 dependencies = [
+ "comp",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -15,6 +16,17 @@ name = "autocfg"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
+
+[[package]]
+name = "comp"
+version = "0.1.0"
+source = "git+https://github.com/hkdnet/comp-rs#6078161f475a2ff0f5752fba289a2cb920d633a8"
+dependencies = [
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "proconio",
+]
 
 [[package]]
 name = "lazy_static"
