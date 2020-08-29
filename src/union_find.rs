@@ -1,5 +1,5 @@
 pub struct UnionFind {
-  v: Vec<usize>,
+  pub v: Vec<usize>,
 }
 impl UnionFind {
   pub fn new(n: usize) -> Self {
