@@ -25,26 +25,31 @@ fn main() {
         }
     }
 
-    let cnt = {
-        let mut c = BTreeMap::new();
-        for &v in uf.v.iter() {
-            c.entry(v).and_modify(|e| *e += 1).or_insert(1);
-        }
-        c
-    };
-    println!("f {:?}", friends);
-    println!("b {:?}", blockers);
-    println!("{:?}", uf.v);
+    let cnt = uf.counts();
+
+    // println!("f {:?}", friends);
+    // println!("b {:?}", blockers);
+    // println!("{:?}", uf.v);
     let ans = (0..n)
         .map(|i| {
             let r = uf.root(i);
             let mut ans = *cnt.get(&r).unwrap() - 1;
-            let direct_friends = friends.get(&i).map_or(0, |s| s.len());
-            println!(
-                "for {}: r = {}, ans = {}, direct_friends = {}",
-                i, r, ans, direct_friends
-            );
+            let direct_friends = friends.get(&i).map_or(0, |s| {
+                // println!("direct friends: {:?}", s);
+                s.len()
+            });
+            // println!("uf.v[33]    {}", uf.root(33));
+            // println!("uf.v[29430] {}", uf.root(2930));
+            // println!("33 cnt {:?}", cnt.get(&33));
+            // println!("29430 cnt {:?}", cnt.get(&29430));
+            // println!("29430 f {:?}", friends.get(&29430));
+            // println!(
+            //     "for {}: r = {}, ans = {}, direct_friends = {}",
+            //     i, r, ans, direct_friends
+            // );
             ans -= direct_friends;
+
+            // println!("{:?}", blockers.get(&i));
 
             if let Some(bs) = blockers.get(&i) {
                 for &b in bs {
