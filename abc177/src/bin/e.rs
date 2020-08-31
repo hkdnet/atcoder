@@ -4,40 +4,35 @@ use proconio::marker::*;
 
 use std::collections::BTreeSet;
 
-fn primes_upto(n: u32) -> BTreeSet<u32> {
-    let nu = n as usize;
-    let mut v = vec![true; nu + 1];
+fn osak(n: usize) -> Vec<usize> {
+    if n == 0 {
+        return vec![0];
+    }
+    let mut ret = vec![0; n + 1];
+    ret[0] = 0;
+    ret[1] = 1;
 
-    for i in 2..(nu / 2) {
-        if v[i] {
-            let mut idx = i * 2;
-            while idx <= nu {
-                v[idx] = false;
-
+    for i in 2..n + 1 {
+        if ret[i] == 0 {
+            let mut idx = i;
+            while idx < n + 1 {
+                ret[idx] = i;
                 idx += i;
             }
-        }
-    }
-    v[0] = false;
-    v[1] = false;
-    let mut ret = BTreeSet::new();
-    for (i, &b) in v.iter().enumerate() {
-        if b {
-            ret.insert(i as u32);
         }
     }
 
     ret
 }
 
-fn gcd(a: u32, b: u32) -> u32 {
+fn gcd(a: usize, b: usize) -> usize {
     if b == 0 {
         a
     } else {
         gcd(b, a % b)
     }
 }
-fn setgcd(arr: &Vec<u32>) -> u32 {
+fn setgcd(arr: &Vec<usize>) -> usize {
     let n = arr.len();
     if n == 1 {
         return arr[0];
@@ -57,42 +52,36 @@ fn setgcd(arr: &Vec<u32>) -> u32 {
 fn main() {
     use proconio::input;
     input!(n: usize);
-    input!(aa: [u32; n]);
+    input!(aa: [usize; n]);
 
     let max = 1000000;
     if setgcd(&aa) == 1 {
-        let ps = primes_upto(max);
-        // println!("{:?}", ps);
+        let osak = osak(max);
         let mut used = BTreeSet::new();
-        for a in aa {
-            if ps.contains(&a) {
-                used.insert(a);
+        for &a in aa.iter() {
+            if a == 1 {
                 continue;
             }
-            let mut a = a;
-            for &p in ps.iter() {
-                if a < p {
-                    break;
+            let mut tmp = a;
+            let mut v = vec![];
+            while tmp != osak[tmp] {
+                let p = osak[tmp];
+                if used.contains(&p) {
+                    println!("setwise coprime");
+                    return;
                 }
-                if a % p == 0 {
-                    if used.contains(&p) {
-                        break;
-                    }
-                    used.insert(p);
-                    while a % p == 0 {
-                        a /= p;
-                    }
-                    if a == 1 {
-                        break;
-                    }
-                }
+                v.push(p);
+                tmp /= p;
             }
-            // println!("ps = {:?}", ps);
-            // println!("a = {}", a);
-            if a != 1 {
+            if used.contains(&tmp) {
                 println!("setwise coprime");
                 return;
             }
+
+            for e in v {
+                used.insert(e);
+            }
+            used.insert(tmp);
         }
         println!("pairwise coprime");
     } else {
