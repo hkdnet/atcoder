@@ -2,6 +2,9 @@
 use proconio::input;
 use proconio::marker::*;
 
+use comp::binary_search;
+use std::collections::BTreeMap;
+
 fn build_acc(nn: &Vec<i32>, p: i32) -> Vec<i32> {
     let n = nn.len();
     let mut tmp = vec![0; n + 1];
@@ -49,16 +52,13 @@ fn main() {
     }
 
     let acc = build_acc(&nn, p);
-
-    let mut cnt = 0u64;
-    for r in 0..n {
-        let r = r + 1;
-        for l in 0..r {
-            let s = acc[l] - acc[r];
-            if s % p == 0 {
-                cnt += 1;
-            }
-        }
+    let mut counters: BTreeMap<i32, usize> = BTreeMap::new();
+    for (_, &v) in acc.iter().enumerate() {
+        *counters.entry(v).or_default() += 1;
+    }
+    let mut cnt = 0;
+    for (_, &v) in counters.iter() {
+        cnt += (v * (v - 1)) / 2;
     }
 
     println!("{}", cnt);
