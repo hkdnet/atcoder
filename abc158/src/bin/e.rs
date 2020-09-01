@@ -24,6 +24,10 @@ fn test_build_acc() {
 
     let nn = vec![4, 2, 3];
     assert_eq!(build_acc(&nn, 3), vec![0, 2, 0, 0]);
+    let nn = vec![8, 5, 9];
+    assert_eq!(build_acc(&nn, 2), vec![1, 1, 1, 0]);
+    let nn = vec![9, 8, 9, 2];
+    assert_eq!(build_acc(&nn, 2), vec![0, 1, 1, 0, 0]);
 }
 
 fn main() {
@@ -32,6 +36,17 @@ fn main() {
         .iter()
         .map(|c| c.to_digit(10).unwrap() as i32 % p)
         .collect();
+
+    if p == 2 || p == 5 {
+        let mut ans = 0;
+        for i in 0..n {
+            if nn[i] % p == 0 {
+                ans += i + 1;
+            }
+        }
+        println!("{}", ans);
+        return;
+    }
 
     let modinv = |aa: i32, m: i32| -> i32 {
         let mut a = aa;
@@ -56,7 +71,7 @@ fn main() {
     let acc = build_acc(&nn, p);
     // println!("{:?}", acc);
 
-    let mut cnt = 0;
+    let mut cnt = 0u64;
     let mut tmp = 1;
     for _ in 0..n - 1 {
         tmp *= 10;
