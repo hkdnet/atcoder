@@ -1,6 +1,31 @@
 #![allow(unused_imports)]
 use proconio::input;
 use proconio::marker::*;
+
+fn build_acc(nn: &Vec<i32>, p: i32) -> Vec<i32> {
+    let n = nn.len();
+    let mut tmp = vec![0; n + 1];
+    let mut mul = 1;
+
+    for i in 0..n {
+        let i = n - i;
+        tmp[i - 1] = tmp[i] + (nn[i - 1] * mul);
+        tmp[i - 1] %= p;
+        mul *= 10;
+        mul %= p;
+    }
+    tmp
+}
+
+#[test]
+fn test_build_acc() {
+    let nn = vec![1, 2, 3];
+    assert_eq!(build_acc(&nn, 3), vec![0, 2, 0, 0]);
+
+    let nn = vec![4, 2, 3];
+    assert_eq!(build_acc(&nn, 3), vec![0, 2, 0, 0]);
+}
+
 fn main() {
     input!(n: usize, p: i32, cc: Chars);
     let nn: Vec<i32> = cc
@@ -28,19 +53,7 @@ fn main() {
         u
     };
 
-    let acc = {
-        let mut tmp = vec![0; n + 1];
-        let mut mul = 1;
-
-        for i in 0..n {
-            let i = n - i;
-            tmp[i - 1] = tmp[i] + (nn[i - 1] * mul);
-            tmp[i - 1] %= p;
-            mul *= 10;
-            mul %= p;
-        }
-        tmp
-    };
+    let acc = build_acc(&nn, p);
     // println!("{:?}", acc);
 
     let mut cnt = 0;
