@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+
+require 'open3'
+require 'optparse'
+
+opt = OptionParser.new
+
+options = {
+  fail_fast: false,
+  dir: 'data',
+  ignore: nil,
+}
+
+opt.on('--fail-fast', 'stop test immediately when failure') { |v| options[:fail_fast] = v }
+opt.on('--dir DIR', 'data dir') { |s| options[:dir] = s }
+opt.on('--ignore PATTERN', 'pattern for ignore test case') { |s| options[:ignore] = Regexp.new(s) }
+opt.banner = <<~BANNER
+  #$0 [OPTIONS] CASE_NUMBER -- COMMAND [ARGS]
+BANNER
+opt.parse!(ARGV)
+
+SEPARATOR = '----------'.freeze
+
+num = ARGV.first.to_i
+
+num_str = "%03d" % num
+
+commands = ARGV[1..]
+
+dir = "#{options[:dir]}/#{num_str}"
+
+Dir.glob("#{dir}/in/*").sort.each do |in_file|
+  puts "input: #{in_file}"
+  input = File.read(in_file)
+  basename = File.basename(in_file)
+  if options[:ignore]&.match(basename)
+    puts "skip this file because it matches the ignore pattern"
+    next
+  end
+  out_file = "#{dir}/out/#{basename}"
+  expected = File.read(out_file)
+
+  Open3.popen3(*commands) do |stdin, stdout, stderr, wait_thr|
+    stdin.puts(input)
+    stdin.close
+
+    wait_thr.join
+
+    actual = stdout.read
+
+    if actual.strip == expected.strip
+      puts "OK"
+    else
+      puts "NG"
+      puts "actual  : #{actual.strip}"
+      puts "expected: #{expected.strip}"
+      if options[:fail_fast]
+        exit 1
+      end
+    end
+  end
+end
