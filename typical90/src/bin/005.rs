@@ -21,7 +21,7 @@ fn main() {
             let x = x as usize;
             for &y in ds.iter() {
                 let y = (y % b) as usize;
-                let key = (x + (y * 10)) % (b as usize);
+                let key = (x * 10 + y) % (b as usize);
                 matrix[key][x] += 1;
             }
         }
