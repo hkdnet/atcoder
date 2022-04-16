@@ -9,7 +9,7 @@ edition = "2018"
 comp = { git = "https://github.com/hkdnet/comp-rs" }
 
 proconio = "*"
-num-bigint = "0.2.6"
+num-bigint = "0.4.3"
 num-traits = "0.2.11"
 num-integer = "0.1.42"
 

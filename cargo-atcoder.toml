@@ -1,9 +1,9 @@
 [atcoder]
-submit_via_binary = false # submit via binary by default
-use_cross = false         # use `cross` instead of `cargo` when generating binaries
-binary_column = 80        # maximum column number of generated binary (0 for no wrapping)
-update_interval = 1000    # interval time of fetching result (ms)
-strip_path = "strip"      # specify `strip` command path. NOTE: if you use macOS, you have to install GNU strip and specify its path here.
+submit_via_binary = true # submit via binary by default
+use_cross = false        # use `cross` instead of `cargo` when generating binaries
+binary_column = 80       # maximum column number of generated binary (0 for no wrapping)
+update_interval = 1000   # interval time of fetching result (ms)
+strip_path = "strip"     # specify `strip` command path. NOTE: if you use macOS, you have to install GNU strip and specify its path here.
 
 [profile]
 # target to use to generate binary
@@ -18,7 +18,7 @@ panic = 'abort'
 comp = { git = "https://github.com/hkdnet/comp-rs" }
 
 proconio = "*"
-num-bigint = "0.2.6"
+num-bigint = "0.4.3"
 num-traits = "0.2.11"
 num-integer = "0.1.42"
 
