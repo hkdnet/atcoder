@@ -13,9 +13,7 @@ fn main() {
     for (l, r) in bricks {
         let max = st.query(l, r + 1);
         let new_value = max + 1;
-        for i in l..=r {
-            st.update(i, new_value);
-        }
+        st.update_range(l, r + 1, new_value);
         println!("{}", new_value);
     }
 }
@@ -23,6 +21,7 @@ fn main() {
 pub struct SegmentTree<'a, T> {
     size: usize,
     v: Vec<T>,
+    lazy: Vec<Option<T>>,
     comparator: &'a dyn Fn(T, T) -> bool,
 }
 
@@ -44,35 +43,52 @@ impl<T: PartialEq + PartialOrd + Copy> SegmentTree<'_, T> {
             size *= 2;
         }
         let v = vec![default_value; size * 2];
+        let lazy = vec![None; size * 2];
 
         SegmentTree {
             size,
             v,
+            lazy,
             comparator,
         }
     }
 
     pub fn update(&mut self, i: usize, x: T) {
-        let mut i = i;
-        i += self.size - 1;
-        self.v[i] = x;
-        while i > 0 {
-            i = (i - 1) / 2;
+        self.update_range(i, i + 1, x)
+    }
 
-            if (self.comparator)(x, self.v[i]) {
-                self.v[i] = x;
+    pub fn update_range(&mut self, a: usize, b: usize, new_val: T) {
+        self.sub_update_range(a, b, 0, 0, self.size, new_val);
+    }
+
+    fn sub_update_range(&mut self, a: usize, b: usize, k: usize, l: usize, r: usize, new_val: T) {
+        self.eval(k);
+
+        if a <= l && r <= b {
+            self.lazy[k] = Some(new_val);
+            self.eval(k)
+        } else if a < r && l < b {
+            let nx = (l + r) / 2;
+            let lc_idx = 2 * k + 1;
+            let rc_idx = 2 * k + 2;
+            self.sub_update_range(a, b, lc_idx, l, nx, new_val);
+            self.sub_update_range(a, b, rc_idx, nx, r, new_val);
+            self.v[k] = if (self.comparator)(self.v[lc_idx], self.v[rc_idx]) {
+                self.v[lc_idx]
             } else {
-                break;
-            }
+                self.v[rc_idx]
+            };
         }
     }
 
-    pub fn query(&self, a: usize, b: usize) -> T {
+    pub fn query(&mut self, a: usize, b: usize) -> T {
         self.sub_query(a, b, 0, 0, self.size).unwrap()
     }
 
     // [a, b) is the original range of the query. k is the current index, which represents [l, r) range.
-    fn sub_query(&self, a: usize, b: usize, k: usize, l: usize, r: usize) -> Option<T> {
+    fn sub_query(&mut self, a: usize, b: usize, k: usize, l: usize, r: usize) -> Option<T> {
+        self.eval(k);
+
         if r <= a || b <= l {
             return None;
         }
@@ -91,6 +107,18 @@ impl<T: PartialEq + PartialOrd + Copy> SegmentTree<'_, T> {
             }
         } else {
             r_value
+        }
+    }
+
+    fn eval(&mut self, k: usize) {
+        if let Some(new_val) = self.lazy[k] {
+            // if not a leaf
+            if k < self.size - 1 {
+                self.lazy[k * 2 + 1] = self.lazy[k];
+                self.lazy[k * 2 + 2] = self.lazy[k];
+            }
+            self.v[k] = new_val;
+            self.lazy[k] = None;
         }
     }
 }
