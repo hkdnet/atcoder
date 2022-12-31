@@ -46,7 +46,12 @@ class Runner
   end
 
   def problems
-    @problems ||= Dir["#{in_dir}/*"].map { |e| File.basename(e) }
+    # TODO: check the pattern is not outside of the dir
+    @problems ||= Dir["#{in_dir}/#{pattern}"].map { |e| File.basename(e) }
+  end
+
+  def pattern
+    @pattern ||= "*"
   end
 
   def in_path(name)
@@ -73,6 +78,7 @@ class Runner
         @base_dir = e
       end
       parser.on('-t TIMEOUT', '--timeout TIMEOUT', 'timeout value, default: 2s') { |e| @timeout = e }
+      parser.on('-p PATTERN', '--pattern PATTERN', 'glob pattern') { |e| @pattern = e }
       parser.on('--time', 'use time instead of timeout') { @time = true }
     end
   end
