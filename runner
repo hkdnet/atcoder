@@ -13,7 +13,7 @@ class Runner
       i = in_path(problem_name)
       o = out_path(problem_name)
       prefix = time? ? "time" : "timeout #{timeout}"
-      c = "cat #{i} | #{prefix} #{cmd} | diff - #{o}"
+      c = "cat #{i} | #{prefix} #{cmd} | diff --strip-trailing-cr - #{o}"
       err = time? ? STDERR : '/dev/null'
       unless system(c, { out: '/dev/null', err: err })
         failed = true
