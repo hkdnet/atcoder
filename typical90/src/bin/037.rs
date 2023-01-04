@@ -7,33 +7,28 @@ use proconio::marker::*;
 fn main() {
     input!(w: usize, n: usize);
     input!(recipes: [(usize, usize, i64); n]);
-    let allocate_dp = || SegmentTree::new(w + 1, -1i64, &std::cmp::max);
-    let mut dp = allocate_dp();
-    dp.update(0, 0);
+    let mut dp = vec![-1; w + 1];
+    dp[0] = 0;
     for (l, r, v) in recipes {
-        let mut new_dp = allocate_dp();
-
+        let mut st = SegmentTree::new(w + 1, -1i64, std::cmp::max);
+        for (idx, &v) in dp.iter().enumerate() {
+            st.update(idx, v);
+        }
+        let mut new_dp = dp.clone();
         for i in 0..=w {
-            // do nothing
-            {
-                let prev = dp.query(i, i + 1);
-                if prev >= 0 {
-                    new_dp.update(i, prev);
-                }
-            }
             // choose this recipe
-            {
+            if i >= l {
                 let ll = if i >= r { i - r } else { 0 };
-                let rr = if i >= l { i - l } else { 0 };
-                let m = dp.query(ll, rr + 1);
+                let rr = i - l;
+                let m = st.query(ll, rr + 1);
                 if m >= 0 {
-                    new_dp.update(i, m + v);
+                    new_dp[i] = std::cmp::max(new_dp[i], m + v);
                 }
             }
         }
         dp = new_dp;
     }
-    let val = dp.query(w, w + 1);
+    let val = dp[w];
     if val == 0 {
         println!("-1");
     } else {
@@ -41,14 +36,17 @@ fn main() {
     }
 }
 
-pub struct SegmentTree<'a, T> {
+pub struct SegmentTree<T: Copy, F>
+where
+    F: Fn(T, T) -> T,
+{
     size: usize,
     v: Vec<T>,
     lazy: Vec<Option<T>>,
-    chooser: &'a dyn Fn(T, T) -> T,
+    chooser: F,
 }
 
-impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug> SegmentTree<'_, T> {
+impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug, F: Fn(T, T) -> T> SegmentTree<T, F> {
     /// Returns a Segment Tree with the default value.
     ///
     /// # Arguments
@@ -56,7 +54,7 @@ impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug> SegmentTree<'_, T> {
     /// * `n` - The size of the tree. No need to be aligned to 2^x.
     /// * `default_value` - default value of the tree.
     /// * `chooser` - A closure to return the new value. The 1st argument is the current value. The 2nd argument is the new value. Return the new value.
-    pub fn new(n: usize, default_value: T, chooser: &'_ dyn Fn(T, T) -> T) -> SegmentTree<'_, T> {
+    pub fn new(n: usize, default_value: T, chooser: F) -> SegmentTree<T, F> {
         let mut size = 1;
         while size < n {
             size *= 2;
