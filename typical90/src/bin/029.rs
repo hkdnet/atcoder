@@ -18,14 +18,17 @@ fn main() {
     }
 }
 
-pub struct SegmentTree<'a, T> {
+pub struct SegmentTree<T: Copy, F>
+where
+    F: Fn(T, T) -> T,
+{
     size: usize,
     v: Vec<T>,
     lazy: Vec<Option<T>>,
-    chooser: &'a dyn Fn(T, T) -> T,
+    chooser: F,
 }
 
-impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug> SegmentTree<'_, T> {
+impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug, F: Fn(T, T) -> T> SegmentTree<T, F> {
     /// Returns a Segment Tree with the default value.
     ///
     /// # Arguments
@@ -33,7 +36,7 @@ impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug> SegmentTree<'_, T> {
     /// * `n` - The size of the tree. No need to be aligned to 2^x.
     /// * `default_value` - default value of the tree.
     /// * `chooser` - A closure to return the new value. The 1st argument is the current value. The 2nd argument is the new value. Return the new value.
-    pub fn new(n: usize, default_value: T, chooser: &'_ dyn Fn(T, T) -> T) -> SegmentTree<'_, T> {
+    pub fn new(n: usize, default_value: T, chooser: F) -> SegmentTree<T, F> {
         let mut size = 1;
         while size < n {
             size *= 2;
