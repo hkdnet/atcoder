@@ -119,6 +119,12 @@ impl Lca {
             return a;
         }
 
+        assert_eq!(
+            self.depth[a], self.depth[b],
+            "{} (depth = {}) vs {} (depth = {})",
+            a, self.depth[a], b, self.depth[b]
+        );
+
         for k in 0..bin_size - 1 {
             let k = bin_size - 1 - k;
             if self.parents[k][a] != self.parents[k][b] {
