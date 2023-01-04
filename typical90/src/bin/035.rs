@@ -1,4 +1,5 @@
 #![allow(unused_imports)]
+use std::collections::HashMap;
 use std::collections::VecDeque;
 
 use proconio::input;
@@ -19,16 +20,14 @@ fn main() {
     for _ in 0..q {
         input!(k: usize);
         input!(vv: [Usize1; k]);
-        if vv.len() <= 3 {
-            let mut ans = 0;
-            for i in 0..vv.len() - 1 {
-                ans += lca.distance(vv[i], vv[i + 1]);
-            }
-            ans += lca.distance(vv[vv.len() - 1], vv[0]);
-            println!("{}", ans / 2);
-        } else {
-            println!("{}", 0);
+        let mut vv = vv;
+        vv.sort_by_key(|idx| lca.dfs_order[idx]);
+        let mut ans = 0;
+        for i in 0..vv.len() - 1 {
+            ans += lca.distance(vv[i], vv[i + 1]);
         }
+        ans += lca.distance(vv[vv.len() - 1], vv[0]);
+        println!("{}", ans / 2);
     }
 }
 
@@ -36,6 +35,7 @@ fn main() {
 struct Lca {
     // size: usize,
     // graph: Vec<Vec<usize>>,
+    dfs_order: HashMap<usize, usize>,
     depth: Vec<usize>,
     parents: Vec<Vec<Option<usize>>>,
 }
@@ -58,9 +58,15 @@ impl Lca {
         let mut depth = vec![0; size];
         let mut parents = vec![vec![None; size]; bin_size];
         let mut q = VecDeque::new();
+        let mut dfs_idx = 0;
+        let mut dfs_order = HashMap::new();
         q.push_front((root, size + 1, 0));
+        dfs_order.insert(root, dfs_idx);
 
         while let Some((i, from, d)) = q.pop_front() {
+            dfs_idx += 1;
+            dfs_order.insert(i, dfs_idx);
+
             depth[i] = d;
             let children = &graph[i];
             for &c in children.iter() {
@@ -70,8 +76,8 @@ impl Lca {
                 }
             }
         }
-        for i in 0..size {
-            for k in 0..bin_size - 1 {
+        for k in 0..bin_size - 1 {
+            for i in 0..size {
                 if let Some(v) = parents[k][i] {
                     parents[k + 1][i] = parents[k][v];
                 } else {
@@ -80,7 +86,11 @@ impl Lca {
             }
         }
 
-        Lca { depth, parents }
+        Lca {
+            dfs_order,
+            depth,
+            parents,
+        }
     }
 
     pub fn query(&self, a: usize, b: usize) -> usize {
