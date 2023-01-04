@@ -8,7 +8,7 @@ fn main() {
     input!(w: usize, n: usize);
     input!(bricks: [(usize, usize); n]);
 
-    let mut st = SegmentTree::new(w, 0, &|new: usize, old| new > old);
+    let mut st = SegmentTree::new(w, 0, &std::cmp::max);
 
     for (l, r) in bricks {
         let max = st.query(l, r + 1);
@@ -22,22 +22,18 @@ pub struct SegmentTree<'a, T> {
     size: usize,
     v: Vec<T>,
     lazy: Vec<Option<T>>,
-    comparator: &'a dyn Fn(T, T) -> bool,
+    chooser: &'a dyn Fn(T, T) -> T,
 }
 
-impl<T: PartialEq + PartialOrd + Copy> SegmentTree<'_, T> {
+impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug> SegmentTree<'_, T> {
     /// Returns a Segment Tree with the default value.
     ///
     /// # Arguments
     ///
     /// * `n` - The size of the tree. No need to be aligned to 2^x.
     /// * `default_value` - default value of the tree.
-    /// * `comparator` - A closure to decide whether the new value should be used or not. Return true if the 1st argument(new) should be used. Return false otherwise.
-    pub fn new(
-        n: usize,
-        default_value: T,
-        comparator: &'_ dyn Fn(T, T) -> bool,
-    ) -> SegmentTree<'_, T> {
+    /// * `chooser` - A closure to return the new value. The 1st argument is the current value. The 2nd argument is the new value. Return the new value.
+    pub fn new(n: usize, default_value: T, chooser: &'_ dyn Fn(T, T) -> T) -> SegmentTree<'_, T> {
         let mut size = 1;
         while size < n {
             size *= 2;
@@ -49,7 +45,7 @@ impl<T: PartialEq + PartialOrd + Copy> SegmentTree<'_, T> {
             size,
             v,
             lazy,
-            comparator,
+            chooser,
         }
     }
 
@@ -65,7 +61,7 @@ impl<T: PartialEq + PartialOrd + Copy> SegmentTree<'_, T> {
         self.eval(k);
 
         if a <= l && r <= b {
-            self.lazy[k] = Some(new_val);
+            self.update_lazy(k, new_val);
             self.eval(k)
         } else if a < r && l < b {
             let nx = (l + r) / 2;
@@ -73,11 +69,7 @@ impl<T: PartialEq + PartialOrd + Copy> SegmentTree<'_, T> {
             let rc_idx = 2 * k + 2;
             self.sub_update_range(a, b, lc_idx, l, nx, new_val);
             self.sub_update_range(a, b, rc_idx, nx, r, new_val);
-            self.v[k] = if (self.comparator)(self.v[lc_idx], self.v[rc_idx]) {
-                self.v[lc_idx]
-            } else {
-                self.v[rc_idx]
-            };
+            self.v[k] = (self.chooser)(self.v[lc_idx], self.v[rc_idx]);
         }
     }
 
@@ -101,7 +93,7 @@ impl<T: PartialEq + PartialOrd + Copy> SegmentTree<'_, T> {
 
         if let Some(l) = l_value {
             if let Some(r) = r_value {
-                Some(if (self.comparator)(l, r) { l } else { r })
+                Some((self.chooser)(l, r))
             } else {
                 l_value
             }
@@ -114,11 +106,21 @@ impl<T: PartialEq + PartialOrd + Copy> SegmentTree<'_, T> {
         if let Some(new_val) = self.lazy[k] {
             // if not a leaf
             if k < self.size - 1 {
-                self.lazy[k * 2 + 1] = self.lazy[k];
-                self.lazy[k * 2 + 2] = self.lazy[k];
+                self.update_lazy(k * 2 + 1, new_val);
+                self.update_lazy(k * 2 + 2, new_val);
             }
-            self.v[k] = new_val;
+            self.v[k] = (self.chooser)(self.v[k], new_val);
             self.lazy[k] = None;
+        }
+    }
+
+    fn update_lazy(&mut self, idx: usize, new_val: T) {
+        match self.lazy[idx] {
+            Some(old_val) => {
+                let v = (self.chooser)(old_val, new_val);
+                self.lazy[idx] = Some(v);
+            }
+            None => self.lazy[idx] = Some(new_val),
         }
     }
 }
