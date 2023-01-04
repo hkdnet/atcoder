@@ -22,10 +22,24 @@ pub struct SegmentTree<T: Copy, F>
 where
     F: Fn(T, T) -> T,
 {
+    original_size: usize,
     size: usize,
     v: Vec<T>,
     lazy: Vec<Option<T>>,
     chooser: F,
+}
+impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug, F: Fn(T, T) -> T> std::fmt::Debug
+    for SegmentTree<T, F>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut v = Vec::with_capacity(self.original_size);
+        for i in 0..self.original_size {
+            let idx = self.size - 1 + i;
+            v.push(self.v[idx]);
+        }
+
+        f.debug_struct("SegmentTree").field("leafs", &v).finish()
+    }
 }
 
 impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug, F: Fn(T, T) -> T> SegmentTree<T, F> {
@@ -37,6 +51,7 @@ impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug, F: Fn(T, T) -> T> Segme
     /// * `default_value` - default value of the tree.
     /// * `chooser` - A closure to return the new value. The 1st argument is the current value. The 2nd argument is the new value. Return the new value.
     pub fn new(n: usize, default_value: T, chooser: F) -> SegmentTree<T, F> {
+        let original_size = n;
         let mut size = 1;
         while size < n {
             size *= 2;
@@ -45,6 +60,7 @@ impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug, F: Fn(T, T) -> T> Segme
         let lazy = vec![None; size * 2];
 
         SegmentTree {
+            original_size,
             size,
             v,
             lazy,
