@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
 use std::cmp::min;
+use std::collections::VecDeque;
 
 use proconio::input;
 use proconio::marker::*;
@@ -10,22 +11,22 @@ fn main() {
     let mut dp = vec![-1; w + 1];
     dp[0] = 0;
     for (l, r, v) in recipes {
-        let mut st = SegmentTree::new(w + 1, -1i64, std::cmp::max);
-        for (idx, &v) in dp.iter().enumerate() {
-            st.update(idx, v);
-        }
         let mut new_dp = dp.clone();
-        for i in 0..=w {
-            // choose this recipe
-            if i >= l {
-                let ll = if i >= r { i - r } else { 0 };
-                let rr = i - l;
-                let m = st.query(ll, rr + 1);
-                if m >= 0 {
-                    new_dp[i] = std::cmp::max(new_dp[i], m + v);
-                }
+        // slide-max
+        let mut sm = SlideMax::new(dp);
+
+        for i in l..=w {
+            sm.push_upto(i - l);
+            sm.pop_while(|ii| i >= r && ii < i - r);
+            let &ii = sm.front().unwrap();
+
+            let m = sm.v[ii];
+            if m >= 0 {
+                new_dp[i] = std::cmp::max(new_dp[i], m + v);
             }
+            sm.next();
         }
+
         dp = new_dp;
     }
     let val = dp[w];
@@ -36,112 +37,48 @@ fn main() {
     }
 }
 
-pub struct SegmentTree<T: Copy, F>
-where
-    F: Fn(T, T) -> T,
-{
-    size: usize,
+struct SlideMax<T: Copy + PartialOrd> {
     v: Vec<T>,
-    lazy: Vec<Option<T>>,
-    chooser: F,
+    q: VecDeque<usize>,
+    __state: usize,
 }
-
-impl<T: PartialEq + PartialOrd + Copy + std::fmt::Debug, F: Fn(T, T) -> T> SegmentTree<T, F> {
-    /// Returns a Segment Tree with the default value.
-    ///
-    /// # Arguments
-    ///
-    /// * `n` - The size of the tree. No need to be aligned to 2^x.
-    /// * `default_value` - default value of the tree.
-    /// * `chooser` - A closure to return the new value. The 1st argument is the current value. The 2nd argument is the new value. Return the new value.
-    pub fn new(n: usize, default_value: T, chooser: F) -> SegmentTree<T, F> {
-        let mut size = 1;
-        while size < n {
-            size *= 2;
-        }
-        let v = vec![default_value; size * 2];
-        let lazy = vec![None; size * 2];
-
-        SegmentTree {
-            size,
-            v,
-            lazy,
-            chooser,
-        }
+impl<T: Copy + PartialOrd> SlideMax<T> {
+    fn new(v: Vec<T>) -> Self {
+        let q = VecDeque::new();
+        SlideMax { v, q, __state: 0 }
     }
 
-    pub fn update(&mut self, i: usize, x: T) {
-        self.update_range(i, i + 1, x)
-    }
-
-    pub fn update_range(&mut self, a: usize, b: usize, new_val: T) {
-        self.sub_update_range(a, b, 0, 0, self.size, new_val);
-    }
-
-    fn sub_update_range(&mut self, a: usize, b: usize, k: usize, l: usize, r: usize, new_val: T) {
-        self.eval(k);
-
-        if a <= l && r <= b {
-            self.update_lazy(k, new_val);
-            self.eval(k)
-        } else if a < r && l < b {
-            let nx = (l + r) / 2;
-            let lc_idx = 2 * k + 1;
-            let rc_idx = 2 * k + 2;
-            self.sub_update_range(a, b, lc_idx, l, nx, new_val);
-            self.sub_update_range(a, b, rc_idx, nx, r, new_val);
-            self.v[k] = (self.chooser)(self.v[lc_idx], self.v[rc_idx]);
+    fn next(&mut self) {
+        if self.__state >= self.v.len() {
+            return;
         }
-    }
-
-    pub fn query(&mut self, a: usize, b: usize) -> T {
-        self.sub_query(a, b, 0, 0, self.size).unwrap()
-    }
-
-    // [a, b) is the original range of the query. k is the current index, which represents [l, r) range.
-    fn sub_query(&mut self, a: usize, b: usize, k: usize, l: usize, r: usize) -> Option<T> {
-        self.eval(k);
-
-        if r <= a || b <= l {
-            return None;
-        }
-        if a <= l && r <= b {
-            return Some(self.v[k]);
-        }
-        let nx = (l + r) / 2;
-        let l_value = self.sub_query(a, b, 2 * k + 1, l, nx);
-        let r_value = self.sub_query(a, b, 2 * k + 2, nx, r);
-
-        if let Some(l) = l_value {
-            if let Some(r) = r_value {
-                Some((self.chooser)(l, r))
+        let i = self.__state;
+        while let Some(&ii) = self.q.back() {
+            if self.v[ii] < self.v[i] {
+                self.q.pop_front();
             } else {
-                l_value
+                break;
             }
-        } else {
-            r_value
+        }
+        self.q.push_back(i);
+
+        self.__state += 1;
+    }
+    fn push_upto(&mut self, n: usize) {
+        while self.__state <= n {
+            self.next()
         }
     }
-
-    fn eval(&mut self, k: usize) {
-        if let Some(new_val) = self.lazy[k] {
-            // if not a leaf
-            if k < self.size - 1 {
-                self.update_lazy(k * 2 + 1, new_val);
-                self.update_lazy(k * 2 + 2, new_val);
+    fn pop_while<F: Fn(usize) -> bool>(&mut self, f: F) {
+        while let Some(&ii) = self.q.front() {
+            if f(ii) {
+                self.q.pop_front();
+            } else {
+                break;
             }
-            self.v[k] = (self.chooser)(self.v[k], new_val);
-            self.lazy[k] = None;
         }
     }
-
-    fn update_lazy(&mut self, idx: usize, new_val: T) {
-        match self.lazy[idx] {
-            Some(old_val) => {
-                let v = (self.chooser)(old_val, new_val);
-                self.lazy[idx] = Some(v);
-            }
-            None => self.lazy[idx] = Some(new_val),
-        }
+    fn front(&self) -> Option<&usize> {
+        self.q.front()
     }
 }
