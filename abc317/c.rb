@@ -2,27 +2,30 @@ N, M = gets.chomp.split(' ').map(&:to_i)
 edges = Hash.new {|h, k| h[k] = {} }
 M.times do
   a, b, c = gets.chomp.split(' ').map(&:to_i)
+  a = 1 << (a-1)
+  b = 1 << (b-1)
   edges[a][b] = c
   edges[b][a] = c
 end
 
-used = []
+q = []
 ans = 0
+cnt = 0
+N.times do |i|
+  cur = 1 << i
+  q << [cur, 0, cur]
+end
+while !q.empty?
+  cnt += 1
+  cur, d, s = q.pop
+  edges[cur].each do |to, delta|
+    next if (s & to) != 0
 
-dfs = ->(cur, d) {
-  used[cur] = true
-  edges[cur].each do |to, dd|
-    if !used[to]
-      nd = d + dd
-      ans = nd if ans < nd
-      dfs.call(to, d+dd)
-    end
+    nd = d + delta
+    ans = nd if ans < nd
+    q << [to, nd, s | to]
   end
-  used[cur] = false
-}
-
-N.times.map do |i|
-  dfs.call(i + 1, 0)
 end
 
 puts ans
+puts cnt
