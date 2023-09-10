@@ -9,33 +9,26 @@ fn main() {
     input!(Q: usize);
     input!(q: [u64; Q]);
 
-    let mut memo = vec![vec![0; N]; 840];
+    let mut memo = vec![0; 840];
 
     let mut solve = |start_at: u64| -> u64 {
         let s1 = start_at + X;
         let mut t = s1;
-        let mut non_memos = vec![];
-        for i in 1..N {
-            // 今バス停 i にいる
-            let i = i - 1;
-            let tt = t % 840;
-            if memo[tt as usize][i] != 0 {
-                t += memo[tt as usize][i];
-                break;
+        let memo_key = (t % 840) as usize;
+        if memo[memo_key] != 0 {
+            t += memo[memo_key];
+        } else {
+            for i in 1..N {
+                // 今バス停 i にいる
+                let i = i - 1;
+                let (p, delta) = s[i];
+                if t % p != 0 {
+                    t += p - (t % p);
+                }
+                t += delta;
             }
-            non_memos.push(t);
-            let (p, delta) = s[i];
-            if t % p != 0 {
-                t += p - (t % p);
-            }
-            t += delta;
+            memo[memo_key] = t - s1;
         }
-
-        for (idx, ti) in non_memos.into_iter().enumerate() {
-            let m = ti % 840;
-            memo[m as usize][idx] = t - ti;
-        }
-
         t + Y
     };
 
