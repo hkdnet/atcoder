@@ -10,41 +10,32 @@ fn main() {
     input!(N: usize, S: usize);
     input!(ab: [(usize, usize); N]);
 
-    let mut dp = vec![vec![false; S + 1]; N + 1];
-    dp[0][0] = true;
-    for d in 1..=N {
-        let (a, b) = ab[d - 1];
-        for i in std::cmp::min(a, b)..=S {
-            match (a <= i, b <= i) {
-                (true, true) => dp[d][i] = dp[d - 1][i - a] || dp[d - 1][i - b],
-                (true, false) => dp[d][i] = dp[d - 1][i - a],
-                (false, true) => dp[d][i] = dp[d - 1][i - b],
-                (false, false) => {
-                    unreachable!()
-                }
+    // N 日目、現在 p 円
+    let mut dp = BTreeMap::new();
+    dp.insert(0, 0u128);
+    for d in 0..N {
+        let mut tmp = BTreeMap::new();
+        for (&p, &state) in dp.iter() {
+            let (a, b) = ab[d];
+            if p + a <= S {
+                tmp.entry(p + a).or_insert(state);
+            }
+            if p + b <= S {
+                tmp.entry(p + b).or_insert(state | (1 << d));
             }
         }
+
+        swap(&mut dp, &mut tmp);
     }
-    if dp[N][S] {
-        let mut v = vec!['A'; N];
-        let mut rest = S;
+    if let Some(s) = dp.get(&S) {
         for i in 0..N {
-            let i = N - i - 1;
-            let (a, b) = ab[i];
-            if rest < a {
-                // b
-                v[i] = 'B';
-                rest -= b;
+            if s & (1 << i) == 0 {
+                print!("A");
             } else {
-                if !dp[i][rest - a] {
-                    v[i] = 'B';
-                    rest -= b;
-                } else {
-                    rest -= a;
-                }
+                print!("B");
             }
         }
-        println!("{}", v.iter().collect::<String>());
+        println!();
     } else {
         println!("Impossible");
     }
