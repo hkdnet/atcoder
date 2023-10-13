@@ -9,3 +9,4 @@ target
 
 # test case
 *.txt
+test/
