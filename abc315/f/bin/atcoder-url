@@ -1,0 +1,6 @@
+#!/bin/bash -eu
+
+problem_id=$(basename $(pwd))
+contest_id=$(basename $(dirname $(pwd)))
+
+echo "https://atcoder.jp/contests/${contest_id}/tasks/${contest_id}_${problem_id}"

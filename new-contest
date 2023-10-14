@@ -1,0 +1,17 @@
+#!/bin/bash -eu
+
+contest_id=$1
+echo "run cargo atcoder new" >&2
+cargo atcoder new $1
+
+cd $1
+
+echo "cp ruby tmpl" >&2
+
+for l in $(ls src/bin/*.rs); do
+  file=$(basename $l)
+  problem_id="${file%%.*}"
+  cp -r ../rb-tmpl "$problem_id"
+done
+
+echo "done" >&2
