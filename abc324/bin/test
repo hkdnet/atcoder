@@ -1,0 +1,5 @@
+#!/bin/bash -eu
+
+bin_dir=$(dirname $0)
+cd $bin_dir/..
+oj test -c "ruby $bin_dir/../ans.rb"
