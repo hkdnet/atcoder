@@ -1,6 +1,0 @@
-#!/bin/bash -eu
-
-bin_dir=$(dirname $0)
-url=$("${bin_dir}/atcoder-url")
-
-oj download $url

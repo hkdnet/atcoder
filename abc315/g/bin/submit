@@ -1,7 +1,0 @@
-#!/bin/bash -eu
-
-bin_dir=$(dirname $0)
-url=$("${bin_dir}/atcoder-url")
-file="${bin_dir}/../ans.rb"
-
-oj submit $url $file
