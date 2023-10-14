@@ -1,0 +1,17 @@
+problem_id = $$(basename $$(pwd))
+contest_id = $$(basename $$(dirname $$(pwd)))
+url = $$(echo "https://atcoder.jp/contests/${contest_id}/tasks/${contest_id}_${problem_id}")
+
+.PHONY: submit run-test debug
+
+submit: run-test
+	oj submit ans.rb
+
+run-test: test
+	oj test -c "ruby ans.rb"
+
+test:
+	oj download $(url)
+
+debug:
+	echo $(problem_id) $(contest_id) $(url)

@@ -4,8 +4,6 @@ contest_id=$1
 echo "run cargo atcoder new" >&2
 cargo atcoder new $1
 
-cp -r bin-tmpl $1/bin
-
 cd $1
 
 echo "cp ruby tmpl" >&2
@@ -14,7 +12,22 @@ for l in $(ls src/bin/*.rs); do
   file=$(basename $l)
   problem_id="${file%%.*}"
   cp -r ../rb-tmpl "$problem_id"
-  ln -sf $(pwd)/bin "${problem_id}/bin"
+  ln -sf $(pwd)/../Makefile.tmpl "${problem_id}/Makefile"
 done
+
+echo "create download all"
+
+cat <<'EOS' > download-all.sh
+#!/bin/bash -eu
+
+for l in $(ls src/bin/*.rs); do
+  file=$(basename $l)
+  cd "${file%%.*}"
+  make test
+  cd ../
+done
+EOS
+
+sudo chmod +x download-all.sh
 
 echo "done" >&2
