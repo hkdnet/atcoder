@@ -19,13 +19,18 @@ keys = h.keys.sort
 l = 0
 r = 1
 
+rec = Array.new(keys.size + 1) { 0 }
+keys.each.with_index do |k, i|
+  rec[i+1] = rec[i] + h[k]
+end
+
 ans = 0
 while l < keys.size
   while keys[r] && keys[r] < keys[l] + M
     r += 1
   end
 
-  tmp = (l...r).map { |e| h[keys[e]] }.sum
+  tmp = rec[r] - rec[l]
   ans = tmp if ans < tmp
 
   break if r >= keys.size
