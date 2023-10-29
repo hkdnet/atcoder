@@ -17,15 +17,16 @@ fn main() {
     // [l, r)
     let mut l = 0;
     let mut r = 1;
-    let mut ans = 0;
+    let mut ans = 1;
     while r < N {
         let x = a[l];
         let y = x + M;
         while r < N {
-            if a[r] >= y {
+            if a[r] < y {
+                r += 1;
+            } else {
                 break;
             }
-            r += 1;
         }
         ans = std::cmp::max(ans, r - l);
         l += 1;

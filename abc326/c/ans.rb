@@ -8,33 +8,26 @@ end
 N, M = getis
 
 ps = getis
-h = {}
-ps.each do |p|
-  h[p] ||= 0
-  h[p] += 1
-end
-
-keys = h.keys.sort
+ps.sort!
 
 l = 0
 r = 1
+ans = 1
 
-rec = Array.new(keys.size + 1) { 0 }
-keys.each.with_index do |k, i|
-  rec[i+1] = rec[i] + h[k]
-end
-
-ans = 0
-while l < keys.size
-  while keys[r] && keys[r] < keys[l] + M
-    r += 1
+while r < N
+  x = ps[l]
+  y = x + M
+  while r < N
+    if ps[r] < y
+      r += 1
+    else
+      break
+    end
   end
 
-  tmp = rec[r] - rec[l]
+  tmp = r - l
+
   ans = tmp if ans < tmp
-
-  break if r >= keys.size
-
   l += 1
 end
 

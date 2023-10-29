@@ -6,16 +6,23 @@ use proconio::marker::*;
 fn main() {
     let MOD = 998244353i64;
     input!(N: usize);
+    let ni64 = N as i64;
     input!(a: [i64; N]);
-    let mut x = modinv(N as i64, MOD);
-    let mut dp = vec![0; N + 1];
-    let mut sum = 0;
-    for i in a {
-        sum += i * x % MOD;
-        sum %= MOD;
-        x = modinv(x, MOD);
+    let mut dp = vec![0i64; N + 1];
+    let mut memo = vec![0; N + 1];
+    let inv_n = modinv(ni64, MOD);
+    dp[N] = a[N - 1];
+    memo[N] = dp[N];
+    for i in 0..N {
+        let i = N - i - 1; // N-1 -> 0
+        if i != 0 {
+            dp[i] = a[i - 1];
+        }
+        dp[i] += memo[i + 1] * inv_n;
+        dp[i] %= MOD;
+        memo[i] = (memo[i + 1] + dp[i]) % MOD;
     }
-    println!("{}", sum);
+    println!("{}", dp[0]);
 }
 
 fn modinv(aa: i64, m: i64) -> i64 {
