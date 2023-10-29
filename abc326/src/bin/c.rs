@@ -9,35 +9,25 @@ use proconio::marker::*;
 fn main() {
     input!(N: usize, M: usize);
     input!(a: [usize; N]);
-    let cnt = {
-        let mut cnt = BTreeMap::new();
-        for aa in a {
-            cnt.entry(aa)
-                .and_modify(|e| {
-                    *e += 1;
-                })
-                .or_insert(1u64);
-        }
-        cnt
+    let a = {
+        let mut a = a;
+        a.sort_unstable();
+        a
     };
-
-    let keys = cnt.keys().copied().collect_vec();
+    // [l, r)
     let mut l = 0;
     let mut r = 1;
     let mut ans = 0;
-    let mut rec = vec![0; keys.len() + 1];
-    for (idx, k) in keys.iter().enumerate() {
-        rec[idx + 1] = rec[idx] + cnt.get(&k).unwrap();
-    }
-    while l < keys.len() {
-        while r < keys.len() && keys[r] < keys[l] + M {
+    while r < N {
+        let x = a[l];
+        let y = x + M;
+        while r < N {
+            if a[r] >= y {
+                break;
+            }
             r += 1;
         }
-        let tmp = rec[r] - rec[l];
-        if ans < tmp {
-            ans = tmp;
-        }
-
+        ans = std::cmp::max(ans, r - l);
         l += 1;
     }
 
