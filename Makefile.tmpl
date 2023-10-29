@@ -10,11 +10,17 @@ submit: run-test
 run-test: test
 	oj test -c "ruby ans.rb"
 
+run-test-rs: test
+	oj test -c "cargo run --bin $$(basename $$(pwd))"
+
 test:
 	oj download $(url)
 
 hack:
 	oj g/i -c "ruby naive.rb" --hack "ruby ans.rb" "ruby gen.rb"
+
+hack-rs:
+	oj g/i -c "ruby naive.rb" --hack "cargo run --bin $$(basename $$(pwd))" "ruby gen.rb"
 
 debug:
 	echo $(problem_id) $(contest_id) $(url)
