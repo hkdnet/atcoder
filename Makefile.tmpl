@@ -5,13 +5,16 @@ url = $$(echo "https://atcoder.jp/contests/${contest_id}/tasks/${contest_id}_${p
 .PHONY: submit run-test debug
 
 submit: run-test
-	oj submit ans.rb
+	oj submit -y ans.rb
 
 run-test: test
 	oj test -c "ruby ans.rb"
 
 test:
 	oj download $(url)
+
+hack:
+	oj g/i -c "ruby naive.rb" --hack "ruby ans.rb" "ruby gen.rb"
 
 debug:
 	echo $(problem_id) $(contest_id) $(url)

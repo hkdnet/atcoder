@@ -17,14 +17,15 @@ shortest = ->(beg, calc) {
   N.times do |i|
     ret[i] = beg == i ? 0 : calc[m[beg][i]]
   end
-  q = N.times.to_a
+  q = N.times.map {|i|[i, true]}.to_h
   while !q.empty?
-    i = q.pop
+    i = q.keys.first
+    q.delete(i)
     N.times do |j|
       nx = ret[i] + calc[m[i][j]]
       if ret[j] > nx
         ret[j] = nx
-        q << j
+        q[j] = true
       end
     end
   end
