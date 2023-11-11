@@ -1,12 +1,3 @@
-def geti
-  gets.chomp.to_i
-end
-
-def getis
-  gets.chomp.split(" ").map(&:to_i)
-end
-
-N, Q = getis
 class UnionFindWithPotential
   def initialize(size)
     @rank = Array.new(size, 0)
@@ -64,23 +55,3 @@ class UnionFindWithPotential
     puts "-" * 20
   end
 end
-
-uf = UnionFindWithPotential.new(N)
-ans = []
-Q.times do |q|
-  q = q + 1
-  a, b, d = getis
-  a = a - 1
-  b = b - 1
-
-  if uf.same?(a, b)
-    if uf.diff(a, b) == d
-      ans << q
-    end
-  else
-    uf.unite(a, b, d)
-    ans << q
-  end
-end
-
-puts ans.join(" ")
