@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
 #![allow(non_snake_case)]
+use std::collections::BTreeSet;
 use std::collections::VecDeque;
 
 use proconio::input;
@@ -9,84 +10,45 @@ fn main() {
     input!(N: usize, M: usize);
     input!(S: Chars);
     input!(T: Chars);
-    let start_index = {
-        let mut cur = 0;
-        let mut f = true;
-        while f {
-            let mut ok = true;
-            for (i, &c) in T.iter().enumerate() {
-                let idx = cur + i;
-                if idx >= S.len() {
-                    cur = N;
-                    ok = false;
-                    f = false;
-                    break;
-                }
-                if S[idx] != c {
-                    ok = false;
-                    break;
-                }
-            }
-            if ok {
-                break;
-            } else {
-                cur += 1;
+    let mut s = S;
+    let mut q = VecDeque::new();
+    let mut used = BTreeSet::new();
+    for i in 0..N {
+        if ok(&s[i..], &T) {
+            q.push_back(i);
+            used.insert(i);
+        }
+    }
+
+    while let Some(i) = q.pop_back() {
+        for d in 0..M {
+            s[i + d] = '#';
+        }
+        let l = if i + 1 < M { 0 } else { i + 1 - M };
+        let r = i + M - 1;
+        for j in l..=r {
+            if !used.contains(&j) && ok(&s[j..], &T) {
+                used.insert(j);
+                q.push_back(j);
             }
         }
-        cur
-    };
-    dbg!(start_index);
-    if start_index >= N {
+    }
+
+    if s.iter().all(|&e| e == '#') {
+        println!("Yes");
+    } else {
         println!("No");
-        return;
     }
-
-    let last = start_index + M;
-    if last < N {
-        if !ok(&S[last..], &T) {
-            println!("No");
-            return;
-        }
-    }
-    if start_index != 0 {
-        let mut cs: Vec<char> = S[0..start_index].to_vec();
-        cs.reverse();
-
-        let mut reversed = T.to_vec();
-        reversed.reverse();
-        if !ok(&cs, &reversed) {
-            println!("No");
-            return;
-        }
-    }
-
-    println!("Yes");
 }
 
-fn ok(s: &[char], t: &[char]) -> bool {
-    let mut v = vec![false; s.len()];
-    dbg!(&s, &t);
-    v[0] = true;
-    for l in 0..v.len() {
-        if !v[l] {
-            continue;
-        }
-        for i in 0..t.len() {
-            let j = i + 1;
-            if l + j >= s.len() {
-                break;
-            }
-            let mut ok = true;
-            for i in 0..j {
-                if s[i] != t[t.len() - i - 1] {
-                    ok = false;
-                    break;
-                }
-            }
-            if ok {
-                v[i] = true;
-            }
+fn ok(a: &[char], b: &[char]) -> bool {
+    if a.len() < b.len() {
+        return false;
+    }
+    for i in 0..b.len() {
+        if a[i] != '#' && a[i] != b[i] {
+            return false;
         }
     }
-    v[s.len() - 1]
+    true
 }
