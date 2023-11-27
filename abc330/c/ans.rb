@@ -29,7 +29,7 @@ end
 
 
 ans = nil
-1.upto(arr.size-1) do |l|
+0.upto(arr.size-1) do |l|
   r = bin_search(l, arr.size-1) do |r|
     arr[l] + arr[r] <= D
   end
