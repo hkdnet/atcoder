@@ -30,7 +30,13 @@ end
 
 ans = nil
 1.upto(arr.size-1) do |l|
-  r = bin_search(l, arr.size-1) do |r|
+  if arr[l] * 2 > D
+    tmp = (arr[l] * 2 - D).abs
+    ans = tmp if tmp.nil? || tmp < ans
+    break
+  end
+
+  r = bin_search(l, arr.size) do |r|
     arr[l] + arr[r] <= D
   end
   tmp = (arr[l] + arr[r] - D).abs
