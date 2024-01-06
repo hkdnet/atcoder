@@ -14,19 +14,9 @@ fn main() {
     }
     for _ in 0..Q {
         input!(a: Usize1, b: Usize1);
-        let mut a = a;
-        let mut b = b;
-        let mut swap = false;
-        if v[a].len() > v[b].len() {
-            std::mem::swap(&mut a, &mut b);
-            swap = true;
-        }
         while let Some(i) = v[a].pop_first() {
             v[b].insert(i);
         }
         println!("{}", v[b].len());
-        if swap {
-            v.swap(a, b);
-        }
     }
 }
