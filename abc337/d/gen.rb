@@ -4,12 +4,12 @@ def randi(l, r)
 end
 
 max = 2 * 10**5
-H = Math.sqrt(max).to_i
+H = max
 W = (max / H).to_i
-K = H / 2
+K = [H, W].max
 puts "#{H} #{W} #{K}"
 def rand_c
-  %w[o .].sample
+  %w[o x .].sample
 end
 H.times do
   line = W.times.map { rand_c }
