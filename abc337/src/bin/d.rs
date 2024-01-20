@@ -10,31 +10,41 @@ macro_rules! debug {
         eprintln!(concat!($("| ", stringify!($a), "={:?} "),*, "|"), $(&$a),*);
     };
 }
-fn required_op(k: usize, cs: &[char]) -> Option<usize> {
-    let mut l = 0;
-    let mut ret = None;
-    while (l + k - 1) < cs.len() {
-        let mut tmp = Some(0);
-        for d in 0..k {
-            match cs[l + d] {
-                'x' => {
-                    tmp = None;
-                    break;
-                }
-                '.' => {
-                    tmp = tmp.map(|e| e + 1);
-                }
-                _ => {}
-            }
-            if tmp.is_none() {
-                break;
+fn required_op(k: usize, cs: &[char]) -> usize {
+    let acc_d = {
+        let mut acc = vec![0; cs.len() + 1];
+        for i in 0..cs.len() {
+            acc[i + 1] = acc[i];
+            if cs[i] == '.' {
+                acc[i + 1] += 1;
             }
         }
-        if let Some(v) = tmp {
-            ret = Some(ret.map_or(v, |e| std::cmp::min(e, v)));
+        acc
+    };
+    let acc_x = {
+        let mut acc = vec![0; cs.len() + 1];
+        for i in 0..cs.len() {
+            acc[i + 1] = acc[i];
+            if cs[i] == 'x' {
+                acc[i + 1] += 1;
+            }
         }
-        l += 1;
+        acc
+    };
+    let mut ret = 100000000;
+
+    for l in 0..cs.len() {
+        if l + k >= acc_x.len() {
+            break;
+        }
+        let x = acc_x[l + k] - acc_x[l];
+        if x != 0 {
+            continue;
+        }
+        let d = acc_d[l + k] - acc_d[l];
+        ret = std::cmp::min(d, ret);
     }
+
     ret
 }
 
@@ -48,21 +58,23 @@ fn main() {
         }
         v
     };
-    let mut ans = None;
+    let mut ans = 100000000;
     for row in v.iter() {
-        if let Some(v) = required_op(K, row) {
-            ans = Some(ans.map_or(v, |e| std::cmp::min(e, v)));
+        let v = required_op(K, row);
+        if v != 100000000 {
+            ans = std::cmp::min(ans, v);
         }
     }
     for w in 0..W {
         let row: Vec<char> = (0..H).map(|x| v[x][w]).collect();
-        if let Some(v) = required_op(K, &row) {
-            ans = Some(ans.map_or(v, |e| std::cmp::min(e, v)));
+        let v = required_op(K, &row);
+        if v != 100000000 {
+            ans = std::cmp::min(ans, v);
         }
     }
-    if let Some(v) = ans {
-        println!("{}", v);
-    } else {
+    if ans == 100000000 {
         println!("-1");
+    } else {
+        println!("{}", ans);
     }
 }
