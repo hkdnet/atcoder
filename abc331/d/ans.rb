@@ -35,56 +35,16 @@ def next_n(x)
     N * (x/N + 1)
   end
 end
-rect = ->(a, b, c, d) {
-  acc[c+1][d+1] - acc[a][d+1] - acc[b][c+1] + acc[a][b]
+rect = ->(a, b) {
+  ma = a % N
+  mb = b % N
+  h = a / N
+  w = b / N
+  h * w * acc[N][N] + acc[ma][N] * w + acc[N][mb] * h + acc[ma][mb]
 }
 
 solve = ->(a, b, c, d) {
-  if a >= N
-    orig = a
-    a = orig % N
-    c -= (orig - a)
-    next solve[a, b, c, d]
-  end
-  if b >= N
-    orig = b
-    b = orig % N
-    d -= (orig - b)
-    next solve[a, b, c, d]
-  end
-
-  if a < 0 || b < 0 || c < 0 || d < 0
-    raise "#{[a, b, c, d].join(" ")}"
-  end
-
-  na = next_n(a)
-  nb = next_n(b)
-  ret =
-    if na == next_n(c)
-      if nb == next_n(d)
-        # またがない
-        rect[a, b, c, d]
-      else
-        w = (prev_n(d) - nb)/N
-        # 横にだけまたぐ
-        # l と r と間
-        l = solve[a, b, c, N - 1]
-        r = solve[a, 0, c, d % N]
-        im = 0
-        im = solve[a, 0, c, N - 1] * w if w > 0
-        l + r + im
-      end
-    else
-      h = (prev_n(c) - na)/N
-      # 縦にはまたぐ
-      t = solve[a, b, N - 1, d]
-      bot = solve[0, b, c % N, d]
-      im = 0
-      im = solve[0, b, N - 1, d] * h if h > 0
-      t + bot + im
-    end
-  # p [a, b, c, d, ret]
-  ret
+  rect[c, d] - rect[a, d] - rect[c, b] + rect[a, b]
 }
 
 Q.times do
