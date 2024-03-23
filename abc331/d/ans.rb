@@ -24,17 +24,6 @@ end
 #   puts arr.join(" ")
 # end
 
-def prev_n(x)
-  next_n(x) - N
-end
-
-def next_n(x)
-  if x % N == 0
-    x + N
-  else
-    N * (x/N + 1)
-  end
-end
 rect = ->(a, b) {
   ma = a % N
   mb = b % N
@@ -44,6 +33,10 @@ rect = ->(a, b) {
 }
 
 solve = ->(a, b, c, d) {
+  p rect[c, d]
+  p rect[a, d]
+  p rect[c, b]
+  p rect[a, b]
   rect[c, d] - rect[a, d] - rect[c, b] + rect[a, b]
 }
 
