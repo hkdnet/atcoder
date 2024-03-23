@@ -3,6 +3,9 @@ def randi(l, r)
   rand(r-l) + l
 end
 
-# arr.shuffle
-# arr.sample
-# arr.sample(n)
+N = randi(3, 6)
+S = N.times.map do
+  %w[a b c d e f].sample
+end.join("")
+puts N
+puts S
