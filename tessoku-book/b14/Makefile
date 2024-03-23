@@ -1,0 +1,1 @@
+/Users/ko.sato/ghq/github.com/hkdnet/atcoder/tessoku-book/../Makefile.tmpl
