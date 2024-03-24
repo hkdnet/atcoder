@@ -5,7 +5,7 @@ url = $$(echo "https://atcoder.jp/contests/${contest_id}/tasks/${contest_id}_${p
 .PHONY: submit run-test debug
 
 submit: run-test
-	oj submit -y ans.rb
+	oj submit -y ans.rb --no-open
 
 run-test: test
 	oj test -c "ruby ans.rb"
