@@ -5,6 +5,9 @@ edition = "2021"
 
 # dependencies added to new project
 [dependencies]
+proconio = "*"
+itertools = "*"
+ac-library-rs = "0.1.1"
 
 [profile.release]
 lto = true
