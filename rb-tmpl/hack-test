@@ -5,12 +5,12 @@ if ident.nil?
   exit 1
 end
 
-file = "test/hack-#{ident}.in"
-unless File.exist?(file)
-  abort "Not Found #{file}, built from ident = #{ident}"
+in_file = "test/hack-#{ident}.in"
+unless File.exist?(in_file)
+  abort "Not Found #{in_file}, built from ident = #{ident}"
 end
-
-command = %Q'oj test -c "ruby ans.rb" #{file}'
+pattern = "test/hack-#{ident}.*"
+command = %Q'oj test -c "ruby ans.rb" #{pattern}'
 STDERR.puts command
 
 exec(command)
