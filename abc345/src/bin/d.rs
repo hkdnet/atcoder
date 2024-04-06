@@ -71,12 +71,13 @@ fn main() {
         for (a, b) in pattern.into_iter() {
             for i in 0..v.len() {
                 for j in 0..v[0].len() {
-                    if place_p(v, i, j, a, b) {
+                    if place_p(v, i, j, a, b) && (i == 0 || !v[i - 1][j]) {
                         place(v, i, j, a, b, true);
                         if f(v, &tiles[1..]) {
                             return true;
                         }
                         place(v, i, j, a, b, false);
+                        continue;
                     }
                 }
             }

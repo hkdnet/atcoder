@@ -12,11 +12,12 @@ tiles = N.times.map do
 end
 
 def solve(tiles)
-  (1<<N).times do |rev_state|
+  (1<<tiles.size).times do |rev_state|
     rotated_tiles = []
     tiles.each.with_index do |(a, b), i|
       if rev_state&(1<<i) > 0
         rotated_tiles << [b, a]
+        next if a == b
       else
         rotated_tiles << [a, b]
       end
@@ -33,7 +34,7 @@ end
 
 def sub_solve(tiles)
   b = Hash.new do |h, k|
-    b[h] = k
+    h[k] = {}
   end
 
   tile_index = 0
@@ -43,23 +44,26 @@ def sub_solve(tiles)
       next unless b[h][w].nil?
 
       x, y = tiles[tile_index]
-      return false if x.nil?
-
-      if h + x >= H || w + y >= W
+      if x.nil?
         return false
       end
-      x.times do |dx|
-        y.times do |dy|
-          return false if b[h+x][h+y]
-          b[h+x][h+y] = true
+
+      placable = (h + x > H || w + y > W) && x.times.all? do |dx|
+        y.times.all? do |dy|
+          !b[h+dx][w+dy]
+        end
+      end
+      if placable
+        x.times do |dx|
+          y.times do |dy|
+            b[h+dx][w+dy] = true
+          end
         end
       end
 
       tile_index += 1
     end
   end
-
-  return false if tile_index != tiles.size
 
   H.times do |h|
     W.times do |w|
@@ -68,6 +72,8 @@ def sub_solve(tiles)
       end
     end
   end
+
+  true
 end
 
 f = tiles.permutation.any? do |tiles|

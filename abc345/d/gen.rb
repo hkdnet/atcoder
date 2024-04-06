@@ -3,7 +3,7 @@ def randi(l, r)
   rand(r-l) + l
 end
 
-N = 10
+N = 7
 H = 10
 W = 10
 puts "#{N} #{H} #{W}"
