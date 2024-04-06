@@ -11,36 +11,70 @@ tiles = N.times.map do
   getis
 end
 
-def solve(tiles, sqs)
-  (2**N).times do |s|
-    ts = tiles.each.with_index.map do |(a, b), idx|
-      if (s >> idx) & 1 == 1
-        [a, b]
+def solve(tiles)
+  (1<<N).times do |rev_state|
+    rotated_tiles = []
+    tiles.each.with_index do |(a, b), i|
+      if rev_state&(1<<i) > 0
+        rotated_tiles << [b, a]
       else
-        [b, a]
+        rotated_tiles << [a, b]
       end
     end
-    sqs = [[N, N]]
-    ts.each do |a, b|
+    next if rotated_tiles.size != tiles.size
 
+    if sub_solve(rotated_tiles)
+      return true
     end
+  end
 
+  false
+end
+
+def sub_solve(tiles)
+  b = Hash.new do |h, k|
+    b[h] = k
+  end
+
+  tile_index = 0
+
+  H.times do |h|
+    W.times do |w|
+      next unless b[h][w].nil?
+
+      x, y = tiles[tile_index]
+      return false if x.nil?
+
+      if h + x >= H || w + y >= W
+        return false
+      end
+      x.times do |dx|
+        y.times do |dy|
+          return false if b[h+x][h+y]
+          b[h+x][h+y] = true
+        end
+      end
+
+      tile_index += 1
+    end
+  end
+
+  return false if tile_index != tiles.size
+
+  H.times do |h|
+    W.times do |w|
+      unless b[h][w]
+        return false
+      end
+    end
   end
 end
-# (2**N).times do |s|
-#   ts = tiles.each.with_index.map do |(a, b), idx|
-#     if (s >> idx) & 1 == 1
-#       [a, b]
-#     else
-#       [b, a]
-#     end
-#   end
-#   sqs = [[N, N]]
-#   ts.each do |a, b|
 
-#   end
-# end
-if solve(tiles, [[N, N]])
+f = tiles.permutation.any? do |tiles|
+  solve(tiles)
+end
+
+if f
   puts "Yes"
 else
   puts "No"
