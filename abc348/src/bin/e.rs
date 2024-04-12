@@ -1,6 +1,10 @@
 #![allow(unused_imports)]
 #![allow(non_snake_case)]
 #![allow(unused_macros)]
+use std::collections::BTreeMap;
+use std::collections::VecDeque;
+
+use itertools::Itertools;
 use proconio::input;
 use proconio::marker::*;
 
@@ -12,121 +16,149 @@ macro_rules! debug {
 }
 
 fn main() {
-    input!(N: usize);
-
+    input!(N: usize, edges: [(Usize1, Usize1); N - 1], C: [u64; N]);
     let g = {
-        let mut g = vec![vec![]; N];
-        for _ in 0..N - 1 {
-            input!(a: Usize1, b: Usize1);
-
-            g[a].push(b);
-            g[b].push(a);
+        let mut ret = vec![vec![]; N];
+        for &(u, v) in edges.iter() {
+            ret[u].push(v);
+            ret[v].push(u);
         }
-        g
+        ret
     };
-    input!(C: [usize; N]);
-    let lca = LCA::from_graph(g);
-    let mut ans = usize::MAX;
-    for x in 0..N {
-        let mut tmp = 0;
-        for i in 0..N {
-            let d = lca.dist(i, x);
-            tmp += d * C[i];
+    let res = rerooting(
+        N,
+        edges,
+        (0, 0),
+        |a, b| {
+            let (a1, a2) = a;
+            let (b1, b2) = b;
+            (a1 + b1, a2 + b2)
+        },
+        |a, i| {
+            let (a1, a2) = a;
+            (a1 + a2 + C[i], a2 + C[i])
+        },
+    );
+
+    let centroid = {
+        let mut ret = !0;
+        let mut min = !0;
+        for (i, &(w, _)) in res.iter().enumerate() {
+            if w < min {
+                min = w;
+                ret = i;
+            }
         }
-        if tmp < ans {
-            ans = tmp;
+        ret
+    };
+    debug!(res);
+    debug!(centroid);
+
+    let depth = {
+        let mut depth = vec![0; N];
+        let mut q = VecDeque::from([(centroid, !0, 0)]);
+        while let Some((cur, parent, d)) = q.pop_front() {
+            depth[cur] = d;
+            for &to in g[cur].iter() {
+                if to == parent {
+                    continue;
+                }
+                q.push_back((to, cur, d + 1));
+            }
         }
-    }
+
+        depth
+    };
+    let ans: u64 = depth.into_iter().zip(C).map(|(d, c)| d * c).sum();
     println!("{}", ans);
 }
 
-pub struct LCA {
-    pub N: usize,
-    pub g: Vec<Vec<usize>>,
-    pub depths: Vec<usize>,
-    pub parents: Vec<Vec<usize>>,
-    pub max_h_log: usize,
-    pub root: usize,
-}
-impl LCA {
-    pub fn new(N: usize, AB: &[(usize, usize)]) -> Self {
-        let mut g = vec![vec![]; N];
-        for &(a, b) in AB {
-            g[a].push(b);
-            g[b].push(a);
-        }
-        Self::_construct_from_graph(N, g)
+fn rerooting<T, E, F1, F2>(size: usize, edges: E, id: T, merge: F1, add_node: F2) -> Vec<T>
+where
+    T: Clone,
+    E: IntoIterator<Item = (usize, usize)>,
+    F1: Fn(T, T) -> T,
+    F2: Fn(T, usize) -> T,
+{
+    if size == 0 {
+        return vec![];
     }
-    fn from_graph(g: Vec<Vec<usize>>) -> Self {
-        let N = g.len();
-        Self::_construct_from_graph(N, g)
+    if size == 1 {
+        return vec![add_node(id, 0)];
     }
-    fn _construct_from_graph(N: usize, g: Vec<Vec<usize>>) -> Self {
-        let max_h_log = 29usize; // 2^max_h
-        let root = 0usize;
 
-        let mut depths = vec![0; N];
-        let mut parents = vec![vec![root; max_h_log]; N]; // doubled
-        let mut stack = vec![(root, !0usize)];
-        while let Some(t) = stack.pop() {
-            let (now, prv) = t;
-            if now != root {
-                parents[now][0] = prv;
-            }
-            for &nx in &g[now] {
-                if nx == prv {
+    let (adjcants, index_for_adjcants) = {
+        let mut v1 = vec![vec![]; size];
+        let mut v2 = vec![vec![]; size];
+        for (u, v) in edges {
+            v2[u].push(v1[v].len());
+            v2[v].push(v1[u].len());
+
+            v1[u].push(v);
+            v1[v].push(u);
+        }
+        (v1, v2)
+    };
+
+    let (parents, order) = {
+        let mut parents = vec![0; size];
+        let mut order = vec![0; size];
+        // init ordered tree
+        let mut index = 0;
+        let mut stack = VecDeque::from([0]);
+        parents[0] = !0;
+        while let Some(node) = stack.pop_back() {
+            order[index] = node;
+            index += 1;
+            for &adj in adjcants[node].iter() {
+                if adj == parents[node] {
+                    // skip parent
                     continue;
                 }
-                depths[nx] = depths[now] + 1;
-                stack.push((nx, now));
+                stack.push_back(adj);
+                parents[adj] = node;
             }
         }
-        for i in 1..max_h_log {
-            for v in 0..N {
-                parents[v][i] = parents[parents[v][i - 1]][i - 1];
+        (parents, order)
+    };
+    let mut dp = (0..size)
+        .map(|i| vec![id.clone(); adjcants[i].len()])
+        .collect_vec();
+    // from leaf
+    for i in (1..size).rev() {
+        let node = order[i];
+        let parent = parents[node];
+
+        let mut acc = id.clone();
+        let mut parent_index = !0;
+        for j in 0..adjcants[node].len() {
+            if adjcants[node][j] == parent {
+                parent_index = j;
+                continue;
             }
+            acc = merge(acc, dp[node][j].clone());
         }
 
-        Self {
-            N,
-            g,
-            depths,
-            parents,
-            max_h_log,
-            root,
-        }
+        dp[parent][index_for_adjcants[node][parent_index]] = add_node(acc, node);
     }
 
-    fn la(&self, v: usize, h: usize) -> usize {
-        let mut v = v;
-        let mut h = h;
-        for i in (0..self.max_h_log).rev() {
-            if h >= 1 << i {
-                v = self.parents[v][i];
-                h -= 1 << i;
-            }
+    let mut res = vec![id.clone(); size];
+    // to leaf
+    for &node in order.iter() {
+        let deg = adjcants[node].len();
+        let mut acc = id.clone();
+        let mut acc_from_tail = vec![id.clone(); deg];
+
+        for j in (1..deg).rev() {
+            acc_from_tail[j - 1] = merge(acc_from_tail[j].clone(), dp[node][j].clone());
         }
-        v
+        for j in 0..deg {
+            dp[adjcants[node][j]][index_for_adjcants[node][j]] =
+                add_node(merge(acc.clone(), acc_from_tail[j].clone()), node);
+            acc = merge(acc, dp[node][j].clone());
+        }
+
+        res[node] = add_node(acc, node);
     }
-    fn lca(&self, u: usize, v: usize) -> usize {
-        let mut u = u;
-        let mut v = v;
-        if self.depths[u] < self.depths[v] {
-            std::mem::swap(&mut u, &mut v);
-        }
-        u = self.la(u, self.depths[u] - self.depths[v]);
-        if u == v {
-            return v;
-        }
-        for i in (0..self.max_h_log).rev() {
-            if self.parents[u][i] != self.parents[v][i] {
-                u = self.parents[u][i];
-                v = self.parents[v][i];
-            }
-        }
-        self.parents[u][0]
-    }
-    fn dist(&self, u: usize, v: usize) -> usize {
-        self.depths[u] + self.depths[v] - 2 * self.depths[self.lca(u, v)]
-    }
+    res
 }

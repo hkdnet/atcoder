@@ -15,60 +15,43 @@ end
 C = getis
 SUM = C.sum
 
-# 木の重心を考える
-# f(x) = sum of Ci*d(x, i) なので頂点 i が C[i] だけ重いと考えて良い
+# 全方位木DP, rerooting
 
-# subtree_sum[i]: 頂点 i の部分木を x として C[x] の合計値
-subtree_sum = []
-dfs = ->(cur, parent) {
-  subtree_sum[cur] = C[cur] #
-  E[cur].each do |to, _|
-    next if parent == to
-    subtree_sum[cur] += dfs[to, cur]
+# 配列 sum_c[i]: 頂点 i の部分木の頂点 x について C[x] の総和
+sum_c = []
+# 配列 sum_d[i]: 頂点 i の部分木の頂点 x について C[x] x d(i, x) の総和
+sum_d = []
+dfs = ->(v, parent) {
+  sum_c[v] = C[v]
+  sum_d[v] = 0
+  E[v].each do |t, _|
+    next if t == parent
+    dfs[t, v]
+    sum_c[v] += sum_c[t]
+    sum_d[v] += sum_c[t] + sum_d[t]
   end
-  subtree_sum[cur]
 }
+
 dfs[0, -1]
 
-# すべての部分木の重さが SUM / 2 より低ければ重心として良い
-find_centroid = ->(cur, parent) {
-  centroid_p = true
-  E[cur].each do |to, _|
-    next if to == parent
+# 配列 f[i]: f(i)
+f = []
 
-    tmp = find_centroid[to, cur]
-    return tmp if tmp != -1
+# v: 今の頂点
+# p_sum_c: v の部分木以外の頂点 x について C[x] の総和
+# p_sum_d: v の部分木以外の頂点 x について C[x] x d(v, x) の総和
+rerooting = ->(v, parent, p_sum_c, p_sum_d) {
+  f[v] = sum_d[v] + p_sum_d
+  E[v].each do |t, _|
+    next if t == parent
 
-    if subtree_sum[to] > SUM / 2
-      centroid_p = false
-    end
-  end
-  # 親側の部分木を考える
-  parent_sum = SUM - subtree_sum[cur]
-  if parent_sum > SUM / 2
-    centroid_p = false
-  end
-
-  centroid_p ? cur : -1
-}
-
-centroid = find_centroid[0, -1]
-
-# シンプルな深さ計算
-dist = []
-calc_dist = ->(cur, parent, d) {
-  dist[cur] = d
-  E[cur].each do |to, _|
-    next if to == parent
-
-    calc_dist[to, cur, d + 1]
+    nx_sum_c = p_sum_c + sum_c[v] - sum_c[t]
+    nx_sum_d = p_sum_d + sum_d[v] - (sum_d[t] + sum_c[t]) + nx_sum_c
+    rerooting[t, v, nx_sum_c, nx_sum_d]
   end
 }
-calc_dist[centroid, -1, 0]
 
-ans = 0
-dist.each.with_index do |d, i|
-  ans += d * C[i]
-end
+rerooting[0, -1, 0, 0]
+
+ans = f.min
 puts ans
-
