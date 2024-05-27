@@ -28,7 +28,7 @@ fn main() {
     let res = rerooting(
         N,
         edges,
-        (0, 0),
+        (0, 0), 
         |a, b| {
             let (a1, a2) = a;
             let (b1, b2) = b;
