@@ -12,5 +12,6 @@ macro_rules! debug {
 }
 
 fn main() {
-    unimplemented!();
+    input!(N: usize);
+    input!(cards: [(usize, usize); N]);
 }
