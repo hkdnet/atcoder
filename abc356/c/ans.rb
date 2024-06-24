@@ -9,28 +9,31 @@ tests = M.times.map do
   _, *arr = getl.split(" ")
   keys = arr[...-1]
   result = arr[-1]
-  tmp = 0
-  keys.each do |e|
-    i = e.to_i - 1
-    tmp = tmp | (1<<i)
-  end
-  { keys: tmp, result: result == 'o' }
+  keys.map! { |e| e.to_i - 1 }
+  { keys:, result: result == 'o' }
 end
 
 ans = 0
 
-(1<<N).times do |pat|
+(2**N).times do |pat|
+  next if pat.to_s(2).count("1") < K
   f = tests.all? do |h|
     keys = h[:keys]
     result = h[:result]
-    num = pat & keys
+    tmp = 0
+    keys.each do |i|
+      tmp = tmp | (1<<i)
+    end
+    num = pat & tmp
     opened = num.to_s(2).count("1") >= K
     opened == result
   end
   if f
     ans += 1
-    # p (("0"*N)+pat.to_s(2))[-N..]
+    # p ("000"+pat.to_s(2))[-3..]
   end
+
 end
 
 puts ans
+

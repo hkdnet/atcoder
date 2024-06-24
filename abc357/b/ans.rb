@@ -3,4 +3,10 @@ def geti = getl.to_i
 def getis = getl.split(" ").map(&:to_i)
 def getis1 = getl.split(" ").map { |e| e.to_i - 1 }
 
-puts ans
+S = getl
+u = S.chars.count { |e| e == e.upcase }
+if u +u > S.size
+  puts S.upcase
+else
+  puts S.downcase
+end

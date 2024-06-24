@@ -1,0 +1,1 @@
+/home/hkdnet/ghq/github.com/hkdnet/atcoder/abc357/../Makefile.tmpl

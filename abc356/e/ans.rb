@@ -19,37 +19,31 @@ end
 
 
 N = geti
-A = getis.sort
+A = getis
+C = Array.new(10**6+1) { 0 }
+A.each do |i|
+  C[i] += 1
+end
+1.upto(10**6) do |i|
+  C[i] += C[i-1]
+end
 ans = 0
-threshold = 5
-# p A
-0.upto(N-1) do |l|
-  r = N - 1
-  while r > l
-    tmp = A[r]/A[l]
-    ans += tmp
 
-    if (r-threshold)>l && A[r] - A[r-threshold] < l
-      nx = bin_search(l+1, r) do |i|
-        A[i]/A[l] != tmp
-      end
-      nx += 1
+1.upto(10**6) do |i|
+  tmp = i
+  cnt = C[i]-C[i-1]
+  next if cnt == 0
 
-      skip = r-nx
-      if skip > 1
-        ans += (skip-1)*tmp
-        # p ["skipped", r, nx, skip*tmp]
-        r = nx
-      else
-        # puts "skip aborted"
-        r -=1
-      end
-    else
-      r -= 1
-      next
-    end
+  while tmp < 10**6+1
+    cur = tmp/i
+    idx = tmp+i-1
+    idx = C.size - 1 if idx >= C.size
+    c = C[idx] - C[tmp-1]
+    # p [i, idx, tmp, c, cur, cnt] if c != 0
+    ans += c * cur * cnt
+    tmp += i
   end
-  # p [l, ans]
+  ans -= cnt*(cnt+1)/2
 end
 
 puts ans

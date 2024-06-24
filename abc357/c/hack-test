@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+ident = ARGV.first
+if ident.nil?
+  puts "Usage: #$0 <ident, 000>"
+  exit 1
+end
+
+in_file = "test/hack-#{ident}.in"
+unless File.exist?(in_file)
+  abort "Not Found #{in_file}, built from ident = #{ident}"
+end
+pattern = "test/hack-#{ident}.*"
+command = %Q'oj test -c "ruby ans.rb" #{pattern}'
+STDERR.puts command
+
+exec(command)
